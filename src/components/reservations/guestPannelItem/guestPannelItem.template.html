@@ -1,0 +1,20 @@
+<div>
+    <ul class="guestProfileSidePanelList">
+        <li @click="sendGuestInfoToDetail(guestDetail)">
+            <div>
+                <strong>{{guestDetail.GuestFirstName}} {{guestDetail.GuestLastName}}</strong>
+                <span>{{guestDetail.PhoneNumber}}</span>
+                <span class="gp-email">{{guestDetail.Emailaddress}}</span>
+            </div>
+            <div>
+                <span v-if="guestDetail.ArrivalDate">{{formatDate(guestDetail.LastArrivalDate)}}</span>
+                <!-- <span v-if="guestDetail.Stays">+ {{guestDetail.Stays}} Booking(s)</span> -->
+                <span v-if="guestDetail.Stays">+ {{guestDetail.Stays}} {{guestDetail.Stays > 1 ? 'Bookings' : guestDetail.Stays == 1 ? 'Booking' : ''}}</span>
+            </div>
+            <div>
+                <span class="gpSourceIcon" :class="(guestDetail.SubSourceName && guestDetail.SubSourceName != '' && guestDetail.SubSourceName != null) ? guestDetail.SubSourceName : (guestDetail.SourceName && guestDetail.SourceName !='' && guestDetail.SourceName != null) ? guestDetail.SourceName : ''"></span>
+            </div>
+
+        </li>
+    </ul>
+    </div>

@@ -1,0 +1,122 @@
+<div>
+    <div class="notesPanel quickResSummary">
+        <div class="quickResSummary">
+            <div class="row">
+                <div class="col-md-12 pt-0" v-if="reservationId">
+                    <div class="row">
+                        <div class="col-md-7">
+                            <span class="guestName">{{reservationDetails.resGuestName}}</span>
+                        </div>
+                        <div class="resInfoSectionActions abso " style="top: 23px;">
+                            <div class="form-control  resDetailStatus statusType" :class="reservationDetails.resStatusName">
+                                <div style="padding: 10px 10px;">
+                                    {{reservationDetails.resStatusName}}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-12" v-if="reservationId">
+                    <div class="row">
+                        <div class="col-md-4 form-group">
+                            <label>GUESTS</label>
+                            <span class="persons">{{reservationDetails.resGuests}}
+                                Persons</span>
+                        </div>
+                        <div class="col-md-8" style="text-align: right">
+                            <span>
+                                <span style="margin: 0 -3px 0 0; padding: 3px 8px;" class="UnitClass" :class="reservationDetails.ColorCode">{{reservationDetails.UnitClassName}}</span>
+                                <br>
+                                <span class="unitNickName">{{reservationDetails.propertyNickName}}
+                                    - {{reservationDetails.unitNickName}}</span>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-12" v-if="reservationId">
+                    <div class="row checkDates">
+                        <div class="col form-group d-flex flex-column">
+                            <label>Check-In</label>
+                            <span style="white-space: nowrap;">
+                                <span class="month">{{reservationDetails.resCheckInDate}}</span>
+                            </span>
+                        </div>
+                        <div class="col form-group checkNights">
+                            <!-- <i class="fa fa-clock-o"></i> -->
+                        </div>
+                        <div class="col form-group d-flex flex-column">
+                            <label>Check-Out</label>
+                            <span style="white-space: nowrap; float: right;">
+                                <span class="month">{{reservationDetails.resCheckOutDate}}</span>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-12">
+                    <div class="form-group">
+                        <label>Notes Type</label>
+                        <select name="unitClass" class="form-control" v-model="notesDetailById.noteTypeId" v-validate="'required'"
+                            @change="changeNote">
+                            <option v-for="noteType in notesTypeDropdown" :value="noteType.noteTypeId">{{noteType.noteTypeName}}</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-12">
+                    <div class="form-group">
+                        <label>Subject</label>
+                        <input :disabled="fncIsNotesSave && (fncIsNotesSave.isAssigned === -1 && fncIsNotesSave.functionState === 2)"
+                            v-if="fncIsNotesSave && (fncIsNotesSave.isAssigned === 1 || (fncIsNotesSave.isAssigned === -1 && fncIsNotesSave.functionState === 2))"
+                            type="text" class="form-control" @keyup="enteredNotes" autocomplete="off" id="subject" name="subject"
+                            v-model="notesDetailById.noteSubject">
+                    </div>
+                </div>
+
+                <div class="col-md-12">
+                    <div class="form-group">
+                        <label>Details</label>
+                        <textarea :disabled="fncIsNotesSave && (fncIsNotesSave.isAssigned === -1 && fncIsNotesSave.functionState === 2)"
+                            v-if="fncIsNotesSave && (fncIsNotesSave.isAssigned === 1 || (fncIsNotesSave.isAssigned === -1 && fncIsNotesSave.functionState === 2)) "
+                            class="form-control" name="Details" v-model="notesDetailById.noteDetails"></textarea>
+                    </div>
+                </div>
+                <div class="col-md-12">
+                    <div class="form-group">
+                        <label class="checkLabel">
+                            <input type="checkbox" v-model="notesDetailById.isActionReqd" @change="getActionReqd($event)" />
+                            <span>Action Required</span>
+                        </label>
+
+                    </div>
+                </div>
+
+                <div class="col-md-12" v-show="notesDetailById.isActionReqd">
+                    <div class="form-group">
+                        <label>Due Date</label>
+                        <datePickerComponent sourceFormat="'YYYY-MM-DD'" :isDisabled="fncIsNotesSave && (fncIsNotesSave.isAssigned === -1 && fncIsNotesSave.functionState === 2)"
+                            v-if="fncIsNotesSave && (fncIsNotesSave.isAssigned === 1 || (fncIsNotesSave.isAssigned === -1 && fncIsNotesSave.functionState === 2)) "
+                            id="dueDate" v-model="notesDetailById.dateOrTimeDue" :onUpdate="updateDueDate" :format="'Do MMM YYYY'"
+                            :pickerType="'date'"></datePickerComponent>
+                    </div>
+                </div>
+                <div class="col-md-12" v-show="(notesDetailById.isActionReqd && notesDetailById.noteTypeId == '2')">
+                    <div class="form-group">
+                        <label>Task Type</label>
+                        <select :disabled="fncIsNotesSave && (fncIsNotesSave.isAssigned === -1 && fncIsNotesSave.functionState === 2)"
+                            v-if="fncIsNotesSave && (fncIsNotesSave.isAssigned === 1 || (fncIsNotesSave.isAssigned === -1 && fncIsNotesSave.functionState === 2))"
+                            name="unitClass" class="form-control" v-model="notesDetailById.taskTypeId" v-validate="'required'"
+                            @change="changeSubject(notesDetailById.taskTypeId)">
+                            <option v-for="taskType in taskTypeDropdown" :value="taskType.taskTypeId">{{taskType.taskTypeDesc}}</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-12">
+                    <button type="button" class="btn btn-success btn-sm pull-right mr-0" @click="saveNotesDetails(notesDetailById.noteId)"
+                        title="save notes" :disabled="fncIsNotesSave && (fncIsNotesSave.isAssigned === -1 && fncIsNotesSave.functionState === 2)"
+                        v-if="fncIsNotesSave && (fncIsNotesSave.isAssigned === 1 || (fncIsNotesSave.isAssigned === -1 && fncIsNotesSave.functionState === 2))">Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="menuMaskNotesSum" @click="closeSummaryPannel"></div>
+</div>

@@ -1,0 +1,287 @@
+<div>
+    <div class="reservationSummary">
+    <div class="accDecReservationSummary" :class="reservationSummaryInfo.guestInfo && reservationSummaryInfo.guestInfo.SourceId == 5 && reservationSummaryInfo.guestInfo.StatusId == 12 && !showdeclineRequestReservation ? 'panelHeight':''">
+        <div class="row">
+            <!-- <span class="filterLoad" v-show="isSummaryLoading"></span> -->
+        </div>
+        <div class="quickResSummary" v-show="!isSummaryLoading && reservationSummaryInfo.guestInfo && !showdeclineRequestReservation">
+
+            <div class="row">
+
+                <div class="resInfoSectionActions abso" style="text-align: right">
+                    <div class="summaryActions">
+                        <button :disabled="!statusbutton && reservationSummaryInfo.guestInfo" v-if="reservationSummaryInfo.guestInfo && reservationSummaryInfo.guestInfo.isCheckOut && reservationSummaryInfo.guestInfo.isCheckOut == 1 && reservationSummaryInfo.guestInfo.IsActionEnable == 1"
+                            class="btn btn-default check-out-icon" @click="changeStatus(reservationSummaryInfo.guestInfo.nextStatusId, reservationSummaryInfo.guestInfo.ReservationId)"
+                            title="Check-Out"></button>
+                        <button :disabled="!statusbutton && reservationSummaryInfo.guestInfo" v-if="reservationSummaryInfo.guestInfo && reservationSummaryInfo.guestInfo.isCheckIn && reservationSummaryInfo.guestInfo.isCheckIn == 1 && reservationSummaryInfo.guestInfo.IsActionEnable == 1"
+                            class="btn btn-default check-in-icon" @click="changeStatus(reservationSummaryInfo.guestInfo.nextStatusId , reservationSummaryInfo.guestInfo.ReservationId)"
+                            title="Check-In"></button>
+                        <span v-else></span>
+                    </div>
+                    <select v-if="reservationSummaryInfo.guestInfo" :disabled="!statusbutton && reservationSummaryInfo.guestInfo"
+                        v-model="reservationSummaryInfo.guestInfo.StatusId" name="status" @change="onChangeReservationStatus(reservationSummaryInfo.guestInfo.StatusId)"
+                        class="form-control col-md-6 resDetailStatus statusType" v-bind:class="reservationSummaryInfo.guestInfo.StatusName"
+                        v-validate="'required'">
+                        <option v-for="status in reservationSummaryInfo.statusList" v-bind:value="status.StatusId">{{status.StatusName}}</option>
+                    </select>
+                    <!-- <span v-if="reservationSummaryInfo.guestInfo && reservationSummaryInfo.guestInfo.BookedBy">{{reservationSummaryInfo.guestInfo.BookedBy}}</span> -->
+                    <!-- <span v-if="reservationSummaryInfo.guestInfo && reservationSummaryInfo.guestInfo.DateBooked">{{formatDate(reservationSummaryInfo.guestInfo.DateBooked)}}</span> -->
+                    <span class="source" v-if="reservationSummaryInfo.guestInfo && reservationSummaryInfo.guestInfo.SubSourceName"
+                        v-bind:class="reservationSummaryInfo.guestInfo.SubSourceName"></span>
+                    <span class="source" v-else-if="reservationSummaryInfo.guestInfo && reservationSummaryInfo.guestInfo.sourceName"
+                        v-bind:class="reservationSummaryInfo.guestInfo.sourceName"></span>
+
+
+
+                </div>
+                <div v-if="reservationSummaryInfo.guestInfo" @click="viewReservationDetailById(reservationSummaryInfo.guestInfo.ReservationId)">
+                    <div class="col-md-7 gustnameheight">
+                        <!-- <span class="guestName">B. Clinton</span>
+                                      <h6>washington dc, USA</h6> -->
+                        <span class="guestName" v-if="reservationSummaryInfo.guestInfo">{{reservationSummaryInfo.guestInfo.GuestFullName}}</span>
+                        <h6 v-if="reservationSummaryInfo.guestInfo && reservationSummaryInfo.guestInfo.cityName !== undefined && reservationSummaryInfo.guestInfo.cityName !== null && reservationSummaryInfo.guestInfo.cityName != ''">{{reservationSummaryInfo.guestInfo.cityName}}{{reservationSummaryInfo.guestInfo.stateName ? ', ' + reservationSummaryInfo.guestInfo.stateName: ''}}</h6>
+                        <h6 v-else-if="reservationSummaryInfo.guestInfo">{{reservationSummaryInfo.guestInfo.countryName}}</h6>
+                        <h6 v-else></h6>
+                        <!-- <h6>washington dc, USA</h6> -->
+
+                    </div>
+                    <div>
+
+                    </div>
+                    <div class="col-md-5 resInfoSectionActions">
+
+                    </div>
+                    <div class="col-md-12">
+                        <div class="row">
+                            <div class="col-md-4 form-group">
+                                <label v-if="reservationSummaryInfo.guestInfo.Persons !== -99" >GUESTS</label>
+                                <span v-if="reservationSummaryInfo.guestInfo &&  reservationSummaryInfo.guestInfo.Persons !== -99" class="persons">{{reservationSummaryInfo.guestInfo.Persons}}
+                                    Persons</span>
+                            </div>
+                            <div class="col-md-8 unit-type" style="text-align: right">
+                                <span>
+                                    <span style="margin: 0 -3px 0 0; padding: 2px 6px;" class="UnitClass" :class="reservationSummaryInfo.guestInfo.ColorCode"
+                                        v-if="reservationSummaryInfo.guestInfo.IsHostMode && reservationSummaryInfo.guestInfo.UnitClassName && reservationSummaryInfo.guestInfo.UnitClassName != null">{{reservationSummaryInfo.guestInfo.UnitClassName}}</span>
+                                        <span style="margin: 0 -3px 0 0; padding: 3px 8px;" class="UnitClass" :class="reservationSummaryInfo.guestInfo.ColorCode"
+                                        v-else-if="!reservationSummaryInfo.guestInfo.IsHostMode && reservationSummaryInfo.guestInfo.UnitTypeName && reservationSummaryInfo.guestInfo.UnitTypeName != null">{{reservationSummaryInfo.guestInfo.UnitTypeName}}</span>
+                                    <br>
+                                    <!-- <button v-if="reservationSummaryInfo.guestInfo && reservationSummaryInfo.guestInfo.reservationMode == -1" type="button" class="btn unassign"
+                                    style="width: auto; clear: both;" @click="assignOrUnassign(-1, $event)" title="Un-Assign">
+                                    </button> -->
+                                    <div v-if="reservationSummaryInfo.guestInfo  && reservationSummaryInfo.guestInfo.IsHostMode == true" class="unallocateDiv">
+                                        <!-- <button type="button" :disabled ="reservationSummaryInfo.guestInfo.StatusName === 'Cancelled' || reservationSummaryInfo.guestInfo.StatusName === 'Departed' || reservationSummaryInfo.guestInfo.StatusName === 'No Show'" v-if="reservationSummaryInfo.guestInfo && reservationSummaryInfo.guestInfo.Oversell == false  && reservationSummaryInfo.guestInfo.reservationMode == -1" @click="assignOrUnassign(-1, $event)" class="btn unallocate">
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 26 26" width="26" height="26" fill="#000000">
+                                                <path d="M 12.84375 1 C 12.722656 1.019531 12.605469 1.0625 12.5 1.125 L 0.5 8.125 C 0.1875 8.304688 -0.00390625 8.640625 0 9 L 0 23 C 0 23.550781 0.449219 24 1 24 L 25 24 C 25.550781 24 26 23.550781 26 23 L 26 9 C 26.003906 8.640625 25.8125 8.304688 25.5 8.125 L 13.5 1.125 C 13.300781 1.007813 13.070313 0.964844 12.84375 1 Z M 13 3.15625 L 24 9.59375 L 24 22 L 2 22 L 2 9.59375 Z M 8.5 10 C 7.121094 10 6 11.121094 6 12.5 C 6 13.878906 7.121094 15 8.5 15 C 9.878906 15 11 13.878906 11 12.5 C 11 11.121094 9.878906 10 8.5 10 Z M 17.5 10 C 16.121094 10 15 11.121094 15 12.5 C 15 13.878906 16.121094 15 17.5 15 C 18.878906 15 20 13.878906 20 12.5 C 20 11.121094 18.878906 10 17.5 10 Z M 6.6875 15.5 C 5.585938 15.800781 4 17 4 19 L 13 19 C 13 17 11.414063 15.800781 10.3125 15.5 C 9.8125 15.800781 9.199219 16 8.5 16 C 7.800781 16 7.1875 15.800781 6.6875 15.5 Z M 13 19 L 22 19 C 22 17 20.414063 15.800781 19.3125 15.5 C 18.8125 15.800781 18.199219 16 17.5 16 C 16.800781 16 16.1875 15.800781 15.6875 15.5 C 14.585938 15.800781 13 17 13 19 Z"/>
+                                            </svg>
+
+                                        </button>
+                                        <button type="button" v-else-if="reservationSummaryInfo.guestInfo && reservationSummaryInfo.guestInfo.Oversell == true && reservationSummaryInfo.guestInfo.reservationMode == 1" disabled class="btn unallocate">
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 26 26" width="26" height="26" fill="#000000">
+                                                <path d="M 12.84375 1 C 12.722656 1.019531 12.605469 1.0625 12.5 1.125 L 0.5 8.125 C 0.1875 8.304688 -0.00390625 8.640625 0 9 L 0 23 C 0 23.550781 0.449219 24 1 24 L 25 24 C 25.550781 24 26 23.550781 26 23 L 26 9 C 26.003906 8.640625 25.8125 8.304688 25.5 8.125 L 13.5 1.125 C 13.300781 1.007813 13.070313 0.964844 12.84375 1 Z M 13 3.15625 L 24 9.59375 L 24 22 L 2 22 L 2 9.59375 Z M 8.5 10 C 7.121094 10 6 11.121094 6 12.5 C 6 13.878906 7.121094 15 8.5 15 C 9.878906 15 11 13.878906 11 12.5 C 11 11.121094 9.878906 10 8.5 10 Z M 17.5 10 C 16.121094 10 15 11.121094 15 12.5 C 15 13.878906 16.121094 15 17.5 15 C 18.878906 15 20 13.878906 20 12.5 C 20 11.121094 18.878906 10 17.5 10 Z M 6.6875 15.5 C 5.585938 15.800781 4 17 4 19 L 13 19 C 13 17 11.414063 15.800781 10.3125 15.5 C 9.8125 15.800781 9.199219 16 8.5 16 C 7.800781 16 7.1875 15.800781 6.6875 15.5 Z M 13 19 L 22 19 C 22 17 20.414063 15.800781 19.3125 15.5 C 18.8125 15.800781 18.199219 16 17.5 16 C 16.800781 16 16.1875 15.800781 15.6875 15.5 C 14.585938 15.800781 13 17 13 19 Z"/>
+                                            </svg>
+                                         <svg class="line" x="0px" y="0px" viewBox="0 0 512 512" style="enable-background:new 0 0 512 512;"
+                                         xml:space="preserve">
+                                         <g>
+                                             <path d="M500.364,267.636H11.636C5.21,267.636,0,262.427,0,256c0-6.427,5.21-11.636,11.636-11.636h488.727
+                                       c6.427,0,11.636,5.21,11.636,11.636C512,262.427,506.79,267.636,500.364,267.636z" />
+                                         </g>
+                                        </svg>                                           
+                                        </button> -->
+                                        <button :disabled ="reservationSummaryInfo.guestInfo.StatusName === 'Cancelled' || reservationSummaryInfo.guestInfo.StatusName === 'Departed' || reservationSummaryInfo.guestInfo.StatusName === 'No Show' || reservationSummaryInfo.guestInfo.StatusName == 'In-House'"
+                    v-if= "reservationSummaryInfo.guestInfo && (reservationSummaryInfo.guestInfo.StatusName != 'In-House' && reservationSummaryInfo.guestInfo.StatusName != 'Cancelled' && reservationSummaryInfo.guestInfo.StatusName != 'Departed' && reservationSummaryInfo.guestInfo.StatusName != 'No Show' && reservationSummaryInfo.guestInfo.StatusName != 'Inquiry' && reservationSummaryInfo.guestInfo.StatusName != 'Request' && reservationSummaryInfo.guestInfo.Oversell == false) || (reservationSummaryInfo.guestInfo.Oversell == true)"
+                    type="button" class="btn btn-sm detailBtn clickable" :class="reservationSummaryInfo.guestInfo.Oversell == true ? 'unallocated' : 'allocate'" @click="reservationSummaryInfo.guestInfo.Oversell == false ? assignOrUnassign(-1, $event, 1) : assignOrUnassign(-1, $event, 2)" :title="reservationSummaryInfo.guestInfo.Oversell == true ? 'Allocate' : 'Unallocate'">
+                    <span class="unallocateImg"></span>
+                    <!-- <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 26 26" width="26" height="26" fill="#000000">
+                      <path d="M 12.84375 1 C 12.722656 1.019531 12.605469 1.0625 12.5 1.125 L 0.5 8.125 C 0.1875 8.304688 -0.00390625 8.640625 0 9 L 0 23 C 0 23.550781 0.449219 24 1 24 L 25 24 C 25.550781 24 26 23.550781 26 23 L 26 9 C 26.003906 8.640625 25.8125 8.304688 25.5 8.125 L 13.5 1.125 C 13.300781 1.007813 13.070313 0.964844 12.84375 1 Z M 13 3.15625 L 24 9.59375 L 24 22 L 2 22 L 2 9.59375 Z M 8.5 10 C 7.121094 10 6 11.121094 6 12.5 C 6 13.878906 7.121094 15 8.5 15 C 9.878906 15 11 13.878906 11 12.5 C 11 11.121094 9.878906 10 8.5 10 Z M 17.5 10 C 16.121094 10 15 11.121094 15 12.5 C 15 13.878906 16.121094 15 17.5 15 C 18.878906 15 20 13.878906 20 12.5 C 20 11.121094 18.878906 10 17.5 10 Z M 6.6875 15.5 C 5.585938 15.800781 4 17 4 19 L 13 19 C 13 17 11.414063 15.800781 10.3125 15.5 C 9.8125 15.800781 9.199219 16 8.5 16 C 7.800781 16 7.1875 15.800781 6.6875 15.5 Z M 13 19 L 22 19 C 22 17 20.414063 15.800781 19.3125 15.5 C 18.8125 15.800781 18.199219 16 17.5 16 C 16.800781 16 16.1875 15.800781 15.6875 15.5 C 14.585938 15.800781 13 17 13 19 Z"/>
+                    </svg> -->
+                  </button>
+                                        
+                                        
+                                    </div>
+                                    <div v-if="reservationSummaryInfo.guestInfo && reservationSummaryInfo.guestInfo.IsHostMode == false" class="unallocateDiv">
+                                        <button v-if="reservationSummaryInfo.guestInfo && reservationSummaryInfo.guestInfo.reservationMode == 1"
+                                        type="button" @click="assignOrUnassign(null,$event)" class="btn unassign blueBg" title="Assign Unit" :disabled="reservationSummaryInfo.guestInfo.StatusName == 'In-House' || reservationSummaryInfo.guestInfo.StatusName == 'In-House' || reservationSummaryInfo.guestInfo.StatusName == 'Cancelled' || reservationSummaryInfo.guestInfo.StatusName == 'Departed' || reservationSummaryInfo.guestInfo.StatusName == 'No Show' || reservationSummaryInfo.guestInfo.StatusName == 'Inquiry' || reservationSummaryInfo.guestInfo.StatusName == 'Request'">
+
+                                        <!-- <button v-if="reservationSummaryInfo.guestInfo && reservationSummaryInfo.guestInfo.reservationMode == 1 " type="button" @click="assignOrUnassign(null,$event)"
+                      class="btn btn-sm detailBtn assign" title="Assign Unit" :disabled="reservationSummaryInfo.guestInfo.StatusName == 'In-House' || reservationSummaryInfo.guestInfo.StatusName == 'In-House' || reservationSummaryInfo.guestInfo.StatusName == 'Cancelled' || reservationSummaryInfo.guestInfo.StatusName == 'Departed' || reservationSummaryInfo.guestInfo.StatusName == 'No Show' || reservationSummaryInfo.guestInfo.StatusName == 'Inquiry'">
+                      <span class="assignImg"></span> -->
+                                        <svg x="0px" y="0px" width="470.5px" height="470.5px" viewBox="0 0 470.5 470.5"
+                                            style="enable-background:new 0 0 470.5 470.5;" xml:space="preserve">
+                                            <g>
+                                                <path d="M53.771,0v469.931h34.134V34.134h232.192L185.262,57.91v366.811l185.67,45.779v-67.14h11.664v67.14h34.133V0H53.771z
+                                              M382.596,34.134v42.678h-11.664V34.134H382.596z M217.994,258.876c-6.768,0-12.255-7.14-12.255-15.946
+                                             c0-8.806,5.487-15.946,12.255-15.946s12.254,7.14,12.254,15.946C230.248,251.736,224.762,258.876,217.994,258.876z
+                                              M370.934,350.262V129.909h11.662v220.353H370.934z" />
+                                            </g>
+                                        </svg>
+                                        <svg class="line" x="0px" y="0px" viewBox="0 0 512 512" style="enable-background:new 0 0 512 512;"
+                                            xml:space="preserve">
+                                            <g>
+                                                <path d="M500.364,267.636H11.636C5.21,267.636,0,262.427,0,256c0-6.427,5.21-11.636,11.636-11.636h488.727
+                                          c6.427,0,11.636,5.21,11.636,11.636C512,262.427,506.79,267.636,500.364,267.636z" />
+                                            </g>
+                                        </svg>
+                                    </button>
+                                    <button :disabled="(fncIsReservationUpdate && (fncIsReservationUpdate.isAssigned === -1 && fncIsReservationUpdate.functionState === 2)) || reservationSummaryInfo.guestInfo.StatusName === 'Cancelled' || reservationSummaryInfo.guestInfo.StatusName === 'Departed' || reservationSummaryInfo.guestInfo.StatusName === 'No Show' || reservationSummaryInfo.guestInfo.StatusName == 'In-House'"
+                                        v-if="fncIsReservationUpdate && (fncIsReservationUpdate.isAssigned === 1 || (fncIsReservationUpdate.isAssigned === -1 && fncIsReservationUpdate.functionState === 2)) && reservationSummaryInfo.guestInfo && reservationSummaryInfo.guestInfo.reservationMode == -1"
+                                        type="button" class="btn unassign" @click="assignOrUnassign(-1, $event, 3)" title="Unassign Unit">
+
+                                        <svg version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+                                            x="0px" y="0px" width="470.5px" height="470.5px" viewBox="0 0 470.5 470.5"
+                                            style="enable-background:new 0 0 470.5 470.5;" xml:space="preserve">
+                                            <g>
+                                                <path d="M53.771,0v469.931h34.134V34.134h232.192L185.262,57.91v366.811l185.67,45.779v-67.14h11.664v67.14h34.133V0H53.771z
+                                                M382.596,34.134v42.678h-11.664V34.134H382.596z M217.994,258.876c-6.768,0-12.255-7.14-12.255-15.946
+                                               c0-8.806,5.487-15.946,12.255-15.946s12.254,7.14,12.254,15.946C230.248,251.736,224.762,258.876,217.994,258.876z
+                                                M370.934,350.262V129.909h11.662v220.353H370.934z" />
+                                            </g>
+                                        </svg>
+                                    </button>
+                                    <button :disabled ="reservationSummaryInfo.guestInfo.StatusName === 'Cancelled' || reservationSummaryInfo.guestInfo.StatusName === 'Departed' || reservationSummaryInfo.guestInfo.StatusName === 'No Show' || reservationSummaryInfo.guestInfo.StatusName == 'In-House'"
+                    v-if= "reservationSummaryInfo.guestInfo && (reservationSummaryInfo.guestInfo.StatusName != 'In-House' && reservationSummaryInfo.guestInfo.StatusName != 'Cancelled' && reservationSummaryInfo.guestInfo.StatusName != 'Departed' && reservationSummaryInfo.guestInfo.StatusName != 'No Show' && reservationSummaryInfo.guestInfo.StatusName != 'Inquiry' || reservationSummaryInfo.guestInfo.StatusName != 'Request' && reservationSummaryInfo.guestInfo.Oversell == false) || (reservationSummaryInfo.guestInfo.Oversell == true)"
+                    type="button" class="btn btn-sm detailBtn clickable" :class="reservationSummaryInfo.guestInfo.Oversell == true ? 'unallocated' : 'allocate'" @click="reservationSummaryInfo.guestInfo.Oversell == false ? assignOrUnassign(-1, $event, 1) :  assignOrUnassign(-1, $event, 2)" :title="reservationSummaryInfo.guestInfo.Oversell == true ? 'Allocate' : 'Unallocate'">
+                    <span class="unallocateImg"></span>
+                    <!-- <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 26 26" width="26" height="26" fill="#000000">
+                      <path d="M 12.84375 1 C 12.722656 1.019531 12.605469 1.0625 12.5 1.125 L 0.5 8.125 C 0.1875 8.304688 -0.00390625 8.640625 0 9 L 0 23 C 0 23.550781 0.449219 24 1 24 L 25 24 C 25.550781 24 26 23.550781 26 23 L 26 9 C 26.003906 8.640625 25.8125 8.304688 25.5 8.125 L 13.5 1.125 C 13.300781 1.007813 13.070313 0.964844 12.84375 1 Z M 13 3.15625 L 24 9.59375 L 24 22 L 2 22 L 2 9.59375 Z M 8.5 10 C 7.121094 10 6 11.121094 6 12.5 C 6 13.878906 7.121094 15 8.5 15 C 9.878906 15 11 13.878906 11 12.5 C 11 11.121094 9.878906 10 8.5 10 Z M 17.5 10 C 16.121094 10 15 11.121094 15 12.5 C 15 13.878906 16.121094 15 17.5 15 C 18.878906 15 20 13.878906 20 12.5 C 20 11.121094 18.878906 10 17.5 10 Z M 6.6875 15.5 C 5.585938 15.800781 4 17 4 19 L 13 19 C 13 17 11.414063 15.800781 10.3125 15.5 C 9.8125 15.800781 9.199219 16 8.5 16 C 7.800781 16 7.1875 15.800781 6.6875 15.5 Z M 13 19 L 22 19 C 22 17 20.414063 15.800781 19.3125 15.5 C 18.8125 15.800781 18.199219 16 17.5 16 C 16.800781 16 16.1875 15.800781 15.6875 15.5 C 14.585938 15.800781 13 17 13 19 Z"/>
+                    </svg> -->
+                  </button>
+                                    </div>
+                                    
+                                    <span class="unitNickName" v-if="reservationSummaryInfo.guestInfo.PropertyNickName && reservationSummaryInfo.guestInfo.UnitNickName && reservationSummaryInfo.guestInfo.PropertyNickName !== null && reservationSummaryInfo.guestInfo.UnitNickName !== null">{{reservationSummaryInfo.guestInfo.PropertyNickName}}
+                                        - {{reservationSummaryInfo.guestInfo.UnitNickName}}</span>
+                                    <span class="unitNickName" v-else>{{reservationSummaryInfo.guestInfo.PropertyName}}
+                                        - {{reservationSummaryInfo.guestInfo.UnitName}}</span>
+
+                                </span>
+                            </div>
+                        </div>
+
+
+                    </div>
+                    <div class="col-md-12">
+                        <div class="form-group">
+                            <div class="row">
+                                <div class="col-md-1">
+                                    <button v-show="Tagdisable" type="button" class="btn btn-blank">
+                                        <i class="fa fa-envelope"></i>
+                                    </button>
+                                </div>
+                                <div class="col-md-1">
+                                    <button v-show="Tagdisable" class="btn btn-blank">
+                                        <i class="fa fa-phone"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-12">
+                        <div class="row checkDates">
+                            <div class="col form-group">
+                                <label>Check-In</label>
+                                <span style="white-space: nowrap;">
+                                    <span class="month" v-if="reservationSummaryInfo.guestInfo">{{reservationSummaryInfo.guestInfo.StartMonth}}
+                                        <strong v-if="reservationSummaryInfo.guestInfo">{{reservationSummaryInfo.guestInfo.StartDate}}</strong>
+                                    </span>
+                                    <span class="date" v-if="reservationSummaryInfo.guestInfo">{{reservationSummaryInfo.guestInfo.StartYear}}</span>
+                                </span>
+
+                                <!-- <span class="day" v-if="reservationSummaryInfo.guestInfo && reservationSummaryInfo.guestInfo.StartDay && reservationSummaryInfo.guestInfo.checkInTime && reservationSummaryInfo.guestInfo.StartDay !== null && reservationSummaryInfo.guestInfo.checkInTime !== null">{{reservationSummaryInfo.guestInfo.StartDay}}
+                                    {{reservationSummaryInfo.guestInfo.isPropertycheckintime && reservationSummaryInfo.guestInfo.isPropertycheckintime != '1' ? ', ' + reservationSummaryInfo.guestInfo.checkInTime : ''}}</span> -->
+                                <div class="summaryGetDates">   
+                                    <span class="day" v-if="(reservationSummaryInfo.guestInfo && reservationSummaryInfo.guestInfo.StartDay && reservationSummaryInfo.guestInfo.StartDay !== null) || (!reservationSummaryInfo.guestInfo.checkInTime || reservationSummaryInfo.guestInfo.checkInTime === null)">{{reservationSummaryInfo.guestInfo.StartDay}}
+                                        {{reservationSummaryInfo.guestInfo.isPropertycheckintime == '0' ? ', ' + reservationSummaryInfo.guestInfo.checkInTime : ''}}
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="col form-group checkNights">
+                                <i class="fa fa-clock-o"></i>
+                                <div>
+                                    <span v-if="reservationSummaryInfo.guestInfo">{{reservationSummaryInfo.guestInfo.Nights}}
+                                        Night(s)</span>
+                                </div>
+                            </div>
+                            <div class="col form-group">
+                                <label>Check-Out</label>
+                                <span style="white-space: nowrap;">
+                                    <span class="month" v-if="reservationSummaryInfo.guestInfo">{{reservationSummaryInfo.guestInfo.EndMonth}}
+                                        <strong class="date" v-if="reservationSummaryInfo.guestInfo">{{reservationSummaryInfo.guestInfo.EndDate}}</strong>
+                                    </span>
+                                    <span class="date" v-if="reservationSummaryInfo.guestInfo">{{reservationSummaryInfo.guestInfo.EndYear}}</span>
+                                </span>
+                                <!-- <span class="day" v-if="reservationSummaryInfo.guestInfo && reservationSummaryInfo.guestInfo.EndDay && reservationSummaryInfo.guestInfo.checkOutTime && reservationSummaryInfo.guestInfo.EndDay !== null && reservationSummaryInfo.guestInfo.checkOutTime !== null">{{reservationSummaryInfo.guestInfo.EndDay}},
+                                    {{reservationSummaryInfo.guestInfo.checkOutTime}}</span> -->
+                                <div class="summaryGetDates">
+                                    <span class="day" v-if="(reservationSummaryInfo.guestInfo && reservationSummaryInfo.guestInfo.EndDay && reservationSummaryInfo.guestInfo.EndDay !== null) || (!reservationSummaryInfo.guestInfo.checkOutTime || reservationSummaryInfo.guestInfo.checkOutTime === null)">{{reservationSummaryInfo.guestInfo.EndDay}}
+                                        {{reservationSummaryInfo.guestInfo.isPropertycheckouttime == '0' ? ', ' + reservationSummaryInfo.guestInfo.checkOutTime : ''}}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="quickFolioSummary" :disabled="fncIsFolioView && (fncIsFolioView.isAssigned === -1 && fncIsFolioView.functionState === 2)"
+                    v-if="fncIsFolioView && (fncIsFolioView.isAssigned === 1 || (fncIsFolioView.isAssigned === -1 && fncIsFolioView.functionState === 2)) "
+                    @click="viewReservationDetailById(reservationSummaryInfo.guestInfo.ReservationId)">
+                    <span class="Folio">Folio</span>
+                    <label style="color:#373737;font-size: 16px;font-weight: 600;margin-left: 23px; position: relative; top: -5px;" v-if="reservationSummaryInfo.guestInfo">{{reservationSummaryInfo.guestInfo.RatePlanName}}<label v-if="reservationSummaryInfo.guestInfo.Promocode">({{reservationSummaryInfo.guestInfo.Promocode}})</label>
+                </label>
+                <label class="pull-right custm-alert" v-if="honourFolio">!Alert</label>
+                    <ul class="folioSummary">
+                        <li v-for="folio in folioSummaryDetail">
+                            <span v-if="folio.ItemQty > 1" v-text="folio.FolioItemName + ' ' + 'X' + ' ' + folio.ItemQty + ' ' + 'Nights'"></span>
+                            <span v-else v-text="folio.FolioItemName"></span>
+                            <span class="folioAdr" v-if="folio.ItemQty && folio.Adr" v-text="'( $ ' + folio.Adr + ' per night )'"></span>
+                            <span v-if="folio.Charges !== null" v-text="formatMoney(folio.Charges)"></span>
+                        </li>
+
+                        <li v-if="reservationSummaryInfo.folioCharges && reservationSummaryInfo.folioCharges.TotalTax !== null">
+                            <span>Tax</span>
+                            <span class="pull-right" v-text="formatMoney(reservationSummaryInfo.folioCharges.TotalTax)"></span>
+
+                        </li>
+                        <li class="totalBorders thinPadding pull-left pb-0" v-if="reservationSummaryInfo.folioCharges && reservationSummaryInfo.folioCharges.TotalValue !== null">
+                            <span class="pull-left totalNumeric">Total</span>
+                            <span class="pull-right totalNumeric" v-text="formatMoney(reservationSummaryInfo.folioCharges.TotalValue)"></span>
+                        </li>
+                        <li class="pull-left pt-2" v-if="reservationSummaryInfo.folioCharges && reservationSummaryInfo.folioCharges.Payments !== null">
+                            <span class="pull-left">Payments</span>
+                            <span class="pull-right paymentNumeric" v-text="formatMoney(reservationSummaryInfo.folioCharges.Payments)"></span>
+                        </li>
+                        <li class="thinPadding pull-left pt-0" v-if="reservationSummaryInfo.folioCharges && reservationSummaryInfo.folioCharges.BalanceTransfer !== null && reservationSummaryInfo.guestInfo.companyProfileId != null && ['Reserved', 'Guaranteed', 'Confirmed', 'In-House', 'Departed','Cancelled'].includes(reservationSummaryInfo.guestInfo.StatusName)">
+                            <span class="pull-left">BalanceTransfer</span>
+                            <span class="pull-right paymentNumeric" v-text="formatBalanceTransferAmount(reservationSummaryInfo.folioCharges.BalanceTransfer)"></span>
+                        </li>
+                        <li class="thinPadding totalBorders" v-if="reservationSummaryInfo.folioCharges && reservationSummaryInfo.folioCharges.Balance !== null">
+                            <div class="">
+                                <span class="totalNumeric pull-left">Balance</span>
+                                <span class="balanceNumeric ml-3" v-text="formatMoney(reservationSummaryInfo.folioCharges.Balance)" :class="checkBalanceColor(reservationSummaryInfo.folioCharges.Balance)"></span>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+
+            </div>
+
+        </div>
+        <div class="quickResSummary" v-show="showdeclineRequestReservation">
+            <div class="row">
+                <reservationDeclineComponent :lastMessageObject="lastMessageObject" @cancelRequestDeclineActionVal="cancelRequestDeclineAction" :declineReasonsList="declineReasonsList"></reservationDeclineComponent>
+            </div>
+
+        </div>
+        <div id="app">
+            <foliomodal v-show="isModalVisible" @close="folioRecalculateCloseModal" :params="modalParams" />
+        </div>
+    </div>
+    <!-- <div class="AcceptDeclineWrap" v-if="reservationSummaryInfo.guestInfo && reservationSummaryInfo.guestInfo.SourceId == 5 && !showdeclineRequestReservation && reservationSummaryInfo.guestInfo.StatusId == 12">
+            <button class="btn btn-outline-danger btn-sm pull-left mr-4" data-toggle="modal" data-target="#Decline"
+            @click="AcceptorDecline(0,$event)" 
+            v-if="reservationSummaryInfo.guestInfo.StatusId == 12">Decline</button>
+            <button class="btn btn-primary btn-sm pull-left ml-4" data-toggle="modal" data-target="#Accept"
+            @click="AcceptorDecline(1,$event)"
+            v-if="reservationSummaryInfo.guestInfo.StatusId == 12">Accept</button>
+    </div> -->
+    </div>
+
+    <div class="menuMaskRevSum" @click="closeSummaryPannel"></div>
+</div>

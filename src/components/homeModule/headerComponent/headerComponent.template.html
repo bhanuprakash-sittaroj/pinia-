@@ -1,0 +1,589 @@
+<div id="mainNavBar">
+    <div>
+        <div class="loggedinHome">
+            <div class="logoSection">
+                <a class="mainLogo">
+
+                    <span v-if="selectedClientObj" class="roomTemp">{{ClientName}}</span>
+                    <!-- <span v-if="(selectedClientObj && selectedClientObj.ClientId === 1 && ClientId !== 1)"><button title="Client List" @click="showPropertyPanel"><i style="font-size:24px" class="fa">&#xf107;</i></button></span> -->
+                </a>
+
+                <span class="FixClientListIcon" v-if="(selectedClientObj && selectedClientObj.ClientId === 1)">
+                    <button title="Client List" @click="showClientPanel">
+                        <i class="fas fa-pencil"></i>
+                    </button>
+                </span>
+            </div>
+
+            <form v-show="showsearchText" class="search"
+                v-bind:class="{support: (selectedClientObj && selectedClientObj.ClientId === 1)}">
+                <span class="fas fa-search"></span>
+                <input type="text" name="search" v-on:keyup="searchWithText" v-model="searchText" :disabled="resLoading"
+                    placeholder="Search for a reservation, guest or availability" autocomplete="off">
+                <!-- <button v-if="clear" class="btn btn-default btn-sm" @click="clearResults">Clear</button> -->
+                <button v-if="clear" class="searchClear" @click="clearResults">
+                    <i class="fas fa-times"></i>
+                </button>
+            </form>
+
+
+            <div class="headRightWrap">
+                <!-- <button class="navFixNewReser" @click="redirectToReservation"
+                    :disabled="fncIsReservationNew && (fncIsReservationNew.isAssigned === -1 && fncIsReservationNew.functionState === 2)"
+                    v-if="fncIsReservationNew && (fncIsReservationNew.isAssigned === 1 || (fncIsReservationNew.isAssigned === -1 && fncIsReservationNew.functionState === 2))">New
+                    Reservation</button> -->
+                    <!-- <button class="navFixNewReser">new reservation</button> -->
+                <ul class="topNav">
+
+                    <!-- <li>
+                        <button @click="redirectToHome">
+                            <i class="fa fa-calendar"></i>
+                        </button>
+                    </li> -->
+                    <!--<li><button @click="toggleNotification" class="notoficationButton"><span class="fa fa-bell"></span> <span class="count">{{notificationCount}}</span></button></li>-->
+                    <!-- <li>
+                        <button @click="toggleNotification" title="Notifications"  class="notoficationButton" :class="{ active: isActiveForNotification }">
+                            <span class="fa fa-bell"></span>
+                            <span class="count" v-text="notificationCount"></span>
+                        </button>
+                    </li> -->
+                    <!-- <li>
+                        <button>
+                            <i class="fa fa-cogs topNavHomeIcon"></i>
+                        </button>
+                    </li> -->
+                    <li title="calendar">
+                        <button v-if="showCalendar" @click="calendar"
+                        :class="{ active: parentModuleName === ('Reservations' || parentModuleName === 'HouseKeepingStatus') && isActiveForCalendar }">
+
+                            <i class="fas fa-calendar-alt"></i>
+
+                        </button>
+
+                        <!-- <span>Home</span> -->
+                    </li>
+
+                    <li>
+                        <button @click="toggleNotification" title="Notifications" class="notoficationButton"
+                            :class="{ active: isActiveForNotification }">
+                            <span class="fas fa-bell"></span>
+                            <span class="count" v-if="newNotificationCount ? newNotificationCount < 999 : notificationCount < 999"
+                                v-text="newNotificationCount ? newNotificationCount : notificationCount"></span>
+                            <span class="count" v-else >999+</span>
+                        </button>
+                    </li>
+
+                </ul>
+                <div class="dropdown">
+
+                    <button v-show="showicon" class="btn btn-primary dropdown-toggle profilePic" @click="groupicons"
+                        type="button" data-toggle="dropdown" title="Control Panel"
+                        :class="{ active: parentModuleName === 'Admin' }">
+                        <span class="fas fa-cogs "></span>
+                    </button>
+
+                    <!-- <ul class="dropdown-menu">
+                           
+                            <li @click="redirectToClient" >
+                                <a><i class="fa clientIcon"></i>Client</a>
+                            </li>
+                            <li @click="redirectToProperty" :disabled="fncIsPropertyList && (fncIsPropertyList.isAssigned === -1 && fncIsPropertyList.functionState === 2)" v-if="fncIsPropertyList && (fncIsPropertyList.isAssigned === 1 || (fncIsPropertyList.isAssigned === -1 && fncIsPropertyList.functionState === 2)) " >
+                                   
+                                     <a><i class="fa fa-building" aria-hidden="true"></i> Property</a>
+                                </li>
+
+                            <li @click="redirectToUnit" >
+                                <a><div class="fa unitIcon"></div>Unit</a>
+                            </li>
+                            <li @click="redirectToUserGroups" :disabled="fncIsRoleList && (fncIsRoleList.isAssigned === -1 && fncIsRoleList.functionState === 2)" v-if="fncIsRoleList && (fncIsRoleList.isAssigned === 1 || (fncIsRoleList.isAssigned === -1 && fncIsRoleList.functionState === 2)) "  >
+                                   
+                                <a><i class="fa fa-users"></i> Roles</a>
+                            </li>
+                            <li @click="redirectToUserTypes":disabled="fncIsUserList && (fncIsUserList.isAssigned === -1 && fncIsUserList.functionState === 2)" v-if="fncIsUserList && (fncIsUserList.isAssigned === 1 || (fncIsUserList.isAssigned === -1 && fncIsUserList.functionState === 2)) ">
+                                   
+                                <a><i class="fa fa-user"></i>Users</a>
+                                </li>
+                           
+                        </ul> -->
+                </div>
+
+                <ul class="topNav">
+                    <li>
+                        <button title="Support" @click="showSupportIcon">
+                            <i class="fas fa-life-ring topNavHomeIcon"></i>
+                        </button>
+                    </li>
+
+                    <!-- <li>
+                        <button title="Client List" @click="showClientPanel">
+                            <i class="fa fa fa-star"></i>
+                        </button>
+                    </li> -->
+                </ul>
+                <div class="dropdown">
+                    <button class="btn btn-primary dropdown-toggle profilePic" type="button" data-toggle="dropdown" @click="showProfile"
+                        :title="selectedClientObj.UserFirstName +selectedClientObj.UserLastName"
+                        :class="{ active: isActiveForUser }" >
+                        <!-- <img :src="userImage" alt=""> -->
+                        <span class="fas fa-user-tie"></span>
+                        <!-- <span>{{userName}}</span> -->
+                    </button>
+
+                    <ul class="dropdown-menu">
+                        <li @click="navigateToUserProfile"
+                            :disabled="fncIsMyProfile && (fncIsMyProfile.isAssigned === -1 && fncIsMyProfile.functionState === 2)"
+                            v-if="fncIsMyProfile && (fncIsMyProfile.isAssigned === 1 || (fncIsMyProfile.isAssigned === -1 && fncIsMyProfile.functionState === 2))">
+                            <a>
+                                <i class="fas fa-user-tie"></i>
+                                <span>My Profile</span>
+                            </a>
+                        </li>
+                        <li @click="togglepassword" title="changePassword" :class="{ active:isActiveForPassword }">
+
+                            <a>
+                                <i class="fas fa-key"></i>
+                                <span>Change Password</span>
+                            </a>
+                        </li>
+                        <li @click="logout">
+                            <a>
+                                <i class="fas fa-power-off"></i>
+                                <span>Logout</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="siteHomepage"> </div>
+
+        <div class="menuMaskN notificationMask" @click="toggleNotificationDiv"></div>
+
+        <div id="notification" class="notofocationBar notofocation-panel"  >
+            <!--<h6>Notifications</h6><span @click="clearMessages">Clear</span>-->
+
+            <div class="search-box">
+                <div class="col-md-12 pl-0 pr-0 pt-0">
+                    <form class="search">             
+                        <span class="fas fa-search" style="margin: 9px 6px 0px 9px;float: left;color: #5b6a98;position: absolute;"></span>        
+                        <input type="text" name="searchTextNotification" id="searchTextNotification" v-on:keyup="searchNotification"  
+                         v-model="searchTextNotification" class="" placeholder="Search" autocomplete="off" onfocus="this.searchTextNotification=''">
+                         <i class="far fa-times" @click="clearSearchNotification()" style="position: absolute;right: 15px;top: -2px;font-size: 14px;color: rgb(244, 67, 54);cursor: pointer;"></i>
+                    </form>
+                    <!-- <button type="button" class="btn btn-default pt-2 pr-2 pb-0  pl-2 mr-0" title="Filters">
+                        <select v-model="notificationFilter">
+                            <option disabled value="">FILTER</option>
+                            <option v-for="notificationFilter in notificationFilterList" :value="notificationFilter.Label">{{notificationFilter.Label}}</option>
+                        </select>
+                    </button>  -->
+
+                    <div class="dropdown mainDD keep-open custm-dropdown" style="display: unset;">
+                        <button title="Filters" class="btn btn-default dropdown-toggle pt-1 pr-2 pb-1 pl-2 mr-0" @click="clearHeaderFilter()" type="button" data-toggle="dropdown">  
+                            <i class="fa fa-filter" aria-hidden="true" style="font-size: 14px;"></i>
+                        </button>
+                        <ul class="dropdown-menu headerUnit nested-list" style="width: 387px;">
+                            <div class="overflow-scroll">
+                            <li class="heading">FILTER</li>
+                            <li class="headerUnitname">
+                                <label>Unit Name</label>
+                                <div class="col-md-12 col-wrapper">
+                                    <div class="form-group pos-relative" style="display: unset;">
+                                        <div class="col-md-12 headerSearchResultsAmenitiesDiv" id="headerSearchResultsAmenitiesDiv" @click="headerShowFilterByType('unitName')">
+                                            <ul class="todo-list">
+                                            <li v-for="unit in headerFilterObj.Units" style="padding: 0px !important;">
+                                                <span class="tags">
+                                                <!-- <span class="SelHeadUnitName">{{unit.UnitName}}</span> -->
+                                                <span class="SelMesUnitName">
+                                                    <div class="textOverflowTag">
+                                                    <!-- <p>{{unit.UnitName}}</p> -->
+                                                    <p>{{unit.unitFullName}}</p> 
+                                                    <!-- <p v-html="'('+unit.UnitName.replace('(','_').split('_')[1]"></p> -->
+                                                    <p>({{unit.propertyNickName}} - {{unit.NickName}})</p>
+                                                    </div>
+                                                </span>
+                                                <i class="far fa-times" @click="headerRemoveHeaderUnitFromFilter(unit, $event)"></i>
+                                                </span>
+                                            </li>
+                                            </ul>
+                                            <form class="filter">
+                                                <input type="text" style="padding: 0px !important;" placeholder="Click here to new unit..." autocomplete="off" v-model.trim="headerFilterSearchUnitNameText">
+                                            </form>
+                                        </div>
+                            
+                                        <div class="form-control headerSearchResultsAmenities" @click="$event.stopPropagation()" id="headerUnitNameDropDown" v-if="headerShowunitNameList">
+                                            <ul>
+                                            <li v-for="unit in headerUnitList" v-bind:value="unit" @click="headerAddHeaderUnitToFilter(unit)" style="padding: 4px 15px !important;">{{unit.UnitName}}</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </li>
+                            <li v-for="(notificationFilter, groupLabel) in notificationFilterList1" style="padding-left: 20px; max-width: 225px;">
+                                <label class="checkLabel" style="cursor: pointer;">
+                                    <input type="checkbox" name="eventCheckBox"  :value="groupLabel" checked :id="groupLabel"  @click="actionOnEventSelection($event)"  />
+                                    <span v-text="groupLabel" ></span>
+                                </label>
+                               <ul>
+                                  <li v-for="subEvent in notificationFilter">
+                                     <label class="checkLabel" style="cursor: pointer;">
+                                     <input type="checkbox" :name="groupLabel" :id="subEvent.SubEventId" checked  @click="actionOnSubEventSelection($event)"  />
+                                     <span v-text="subEvent.SubEventName"></span>
+                                     </label>
+                                  </li>
+                               </ul>
+                            </li>
+                            </div>
+                            <div class="headerActionButtons" style="flex-direction: row-reverse;display: flex;justify-content: space-between;">
+                                <button class="btn btn-primary btn-sm" style="color: #fff !important" @click="applyHeaderFilter()">Apply Filter</button>
+                                <button class="btn btn-danger btn-sm"  :style="btnDangerHover" @click="clearAllHeaderFilters();">Clear Filters</button>
+                                <button class="btn btn-danger btn-sm btn-plane closePanelBtn" :style="btnPlaneHover" @click="closeHeaderFilterPanel()">Close Panel</button>
+                            </div>
+                         </ul>
+                      </div>
+
+                </div>
+            </div>
+
+            <div class="notif-tabs">
+                <div class="chat-tabs">
+                    <div class="col-md-12">
+                        <ul class="list-inline">
+                            <li @click="showAllNotifications" class="" v-bind:class="{ active: allNotifications }">
+                                <span>All</span>
+                                <span class="chat-tab-count all" v-if="allNotificationsCount > 99">99+</span>
+                                <span class="chat-tab-count all" v-else>{{allNotificationsCount}}</span>
+                            </li>
+                            <li @click="showUnreadNotifications" class="" v-bind:class="{ active: unreadNotifications }">
+                                <span>Unread</span>
+                                <span class="chat-tab-count unread" v-if="unreadNotificationsCount > 99">99+</span>
+                                <span class="chat-tab-count unread" v-else>{{unreadNotificationsCount}}</span>
+                            </li>
+                            <li @click="showArchivedNotifications" class="" v-bind:class="{ active: archivedNotifications }">
+                                <span>Archived</span>
+                                <!-- <span class="chat-tab-count archived">{{archivedNotificationsCount}}</span> -->
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div v-if="isActiveForNotification">
+                <pageLoadingComponent v-show="notificationLoading"></pageLoadingComponent>
+            </div>
+            
+
+              <div class="notif-clear-markall">
+                    <span v-if="allNotifications"  @click="archiveAll()" style="margin-right: 25px;">
+                    Archive all read
+                    </span>
+                    <span v-if="allNotifications || unreadNotifications" @click="markNotificationsAllRead(userNotifications)">
+                    Mark all as read
+                    </span>
+                    <span v-if="archivedNotifications " @click="clearArchiveNotifications(userNotifications,'allClear')">
+                       Clear all
+                    </span>
+                </div>
+                <div id="noResultsFound" class="notif-noresults" v-if="(readLoading ==false && notificationLoading == false && userNotifications.length == 0 )&& (eventsStack.length == 0)">
+                    <i class="fad fa-exclamation-triangle"></i>
+                    <h5>No results found</h5>
+                  </div>
+            <div class="notif-scroll-list" v-if="enableVirtualList">
+            <virtualList ref="scroller" v-if="((notificationLoading == false && userNotifications.length > 0) || reRender)" :items="userNotifications" uniqueKey="id"
+                :iscrollOptions="options" :variable="variable" :infinite="true" :pulldown="false" 
+                :pulldownText="pullDownTextObj" @loadMore="getMoreNotificationData" @pullRefresh="refreshNotificationData">
+
+                <template #content="{ item }">
+
+                <div class="notification-list">
+                    <div class="notif-row">
+                    <div class="notif-heading" id="date-label" v-html="item.dateText"></div>
+                    <div class="notification-items">
+                        <div>
+                            <div class="notif-initials">
+                                <span>{{item.TempoUserInitials}}</span>
+                                    <!-- <span v-if="props.item.EventDescription == 'Modified Booking'" class="fas fa-bed"></span>
+                                <span v-else-if="props.item.EventDescription == 'New Booking'" class="fas fa-bed"></span>
+                                <span v-else-if="props.item.EventDescription == 'Check-in'" class="fas fa-bed"></span>
+                                <span v-else-if="props.item.EventDescription == 'Check-out'" class="fas fa-bed"></span>
+                                <span v-else-if="props.item.EventDescription == ' Payment '"  class="fas notif-payments"></span>
+                                <span v-else-if="props.item.EventDescription == 'Status change'"   class="fas fa-bed"></span>  -->
+                            </div>
+                            <span v-show="!item.IsProcessed" class="notif-indicator"></span>
+                        </div>
+                    
+                        <div class="notif-info">
+                            <div  @click="navigateToNotification(item)">
+                            <div class="d-flex justify-content-between">
+                                <h6 style="cursor: pointer;" :style="item.subeventId === 30 ? {'color':'red'} : {}">{{ item.EventDescription }}</h6>
+                                <span style="font-size: 12px;color: #aaaaaa;margin-right: 7px;">{{ notificationMsgTime(item.CreatedDate) }}</span>
+                            </div>
+                            <div class="notif-data">
+                                {{ removeHtmlTagfromMessageContent(item.Messagecontent) }}
+                            </div>
+                            </div>
+                            <div class="notif-unit">
+                                <div class="d-flex">
+                                    <span class="src-notif" :class="item.SourceName" v-if="item.SourceName"></span>
+                                    <div>{{ notificationDate(formatUTCDate(item.ArrivalDate)) }} - {{ notificationDate(formatUTCDate(item.DepartureDate)) }}</div>
+
+                                </div>
+                                <div>{{item.UnitName}}</div>                              
+                                <div class="notif-status">
+                                    <div @click="unReadNotification(item)" v-if="item.IsProcessed && !archivedNotifications" class="notif-unread" title="Mark as unread"></div>
+                                    <div @click="readNotification(item)" v-if="!item.IsProcessed && !archivedNotifications" class="notif-read" title="Mark as read"></div>
+                                    <div v-if="item.NotificationStatusId==1 && item.IsProcessed"  @click="archiveNotification(item)" class="notif-archive" title="Archive"></div>
+                                    <div v-if="item.NotificationStatusId==2" class="notif-archived" title="Archived" @click="clearArchiveNotifications(item)"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                                        <!-- <p @click="navigateToNotification(notification)">{{notification.default.message}}</p> -->
+                </div>
+                </div>
+                
+        </template>
+        
+            </virtualList>
+            </div>
+         
+            <!-- <div class="sideBarHeading">
+                <h6 @click="redirectToNotifications">
+                   Notifications
+                </h6>
+
+                <label class="pull-right">
+                    <span class="back"></span>
+                    <span class="clearAll" v-if="notificationCount > 0" @click="dimissAllNotifications">Clear All</span>
+                </label>
+            </div> -->
+
+
+            <ul class="notofiLIst" v-if="notificatoinKeyList && notificatoinKeyList.status == 'success'">
+                <!--<notificationItemComponent v-for="inst in notificatoinKeyList" :key="inst.NotificationIdText" :instance="inst" :filterType="filterType"></notificationItemComponent>-->
+
+
+                <!--<notificationItemComponent v-for="inst in notificatoinKeyList.response" :instanceId="inst.NotificationIdText" :instance="inst" :filterType="filterType" :updateCount="updateNotificationCount"></notificationItemComponent>-->
+
+                <!--<li v-for="notification in notificatoinKeyList1.response" :key="notification.NotificationIdText" v-show="notification.Status == 1 || filterType == 0"
+                :class="[notification.Status == 1 ? 'unread' : 'read']">
+                <span class="icon">
+                    <span class="fa fa-bell"></span>
+                </span>
+                <h6 class="title" @click="naviagateToDetail(notification)">{{notification.MessageTitle}}</h6>
+                <p @click="naviagateToDetail(notification)">{{notification.Message}}</p>
+                <a v-if="notification.Status == 1" class="ml-2 float-right" style="border: 1px solid #e06d6d; border-radius: 11px; padding: 1px 13px; font-size: 12px; font-weight: normal;"
+                    @click="dismissNotification(notification)">Dismiss</a>
+            </li>-->
+
+                <!--<li v-if="notification.status == 'prepared'" v-show="notification.status == 'prepared' || filterType == 'All'" :class="[notification.status == 'prepared' ? 'unread' : 'read']">
+                <span class="icon">
+                    <span class="fa fa-bell"></span>
+                </span>
+                <h6 class="title">{{notification.message}}</h6>
+                <p>{{notification.message}}</p>
+                <a @click="naviagateToDetail(notification)">More</a> <a class="ml-2" @click="dismissNotification(notification)">Dismiss</a>
+            </li>
+            <li v-if="notification.status != 'prepared'" v-show="filterType == 'All'" :class="[notification.status == 'prepared' ? 'unread' : 'read']">
+                <span class="icon">
+                    <span class="fa fa-bell"></span>
+                </span>
+                <h6 class="title">{{notification.message}}</h6>
+                <p>{{notification.message}}</p>
+                <a @click="naviagateToDetail(notification)">More</a> <a class="ml-2" @click="dismissNotification(notification)">Dismiss</a>
+            </li>-->
+
+                <!--<li class="unread">
+                <span class="icon">
+       <span class="fa fa-bell"></span>
+                </span>
+                <h6 class="title">Bonus Announced</h6>
+                <p>Congratulations!!! Your bonus is processed to your account, have a happy weekend<br> <span>22 June 2017</span></p>
+                <a href="#">More</a> <a class="ml-2" href="#">Dismiss</a>
+            </li>
+            <li class="unread">
+                <span class="icon">
+       <span class="fa fa-bell"></span>
+                </span>
+                <h6 class="title">Fire Accident Alert</h6>
+                <p> Due to gas pipe leakage fire explosion has occurred <br> <span>6 June 2017</span></p>
+                <a href="#">More</a> <a class="ml-2" href="#">Dismiss</a>
+            </li>
+            <li>
+                <span class="icon">
+       <span class="fa fa-bell"></span>
+                </span>
+                <h6 class="title">Tasks of the week</h6>
+                <p>Tasks for the coming week to be completed before the due date<br> <span>29 May 2017</span></p>
+                <a href="#">More</a> <a class="ml-2" href="#">Dismiss</a>
+            </li>
+            <li>
+                <span class="icon">
+       <span class="fa fa-bell"></span>
+                </span>
+                <h6 class="title">Estimation of Spain</h6>
+                <p>Estimate for best route to Spain from Italy for Coke company is sent to client<br> <span>22 May 2017</span></p>
+                <a href="#">More</a> <a class="ml-2" href="#">Dismiss</a>
+            </li>
+            <li>
+                <span class="icon">
+       <span class="fa fa-bell"></span>
+                </span>
+                <h6 class="title">Ticket raised on Projector repair</h6>
+                <p>Projector in first floor is not working, needs to be taken care<br> <span>15 May 2017</span></p>
+                <a href="#">More</a> <a class="ml-2" href="#">Dismiss</a>
+            </li>
+            <li>
+                <span class="icon">
+       <span class="fa fa-bell"></span>
+                </span>
+                <h6 class="title">Leave Approved</h6>
+                <p>Sick Leave taken on 10 May have been approved by Mr.Kevin<br> <span>12 May 2017</span></p>
+                <a href="#">More</a> <a class="ml-2" href="#">Dismiss</a>
+            </li>-->
+            </ul>
+        </div>
+
+
+        <!-- password -->
+        <div class="menuMaskP" @click="togglepassword"></div>
+        <div id="password" class="notofocationBar">
+
+            <div class="sideBarHeading">
+                <h6 @click="redirectToChangePassword">
+                    change password </h6>
+            </div>
+            <div class="col-md-12 pt-3">
+            </div>
+
+
+            <!-- <div class="clientList">
+                    <div class="sideBarHeading">
+                        <h6>Client List </h6>
+                    </div>
+       
+       
+                    <div class="col-md-12 pt-3">
+                        <ul class="listMenu">
+                            <li v-for="client in clientList" @click="viewClientDetailById(client)" v-if="client.ClientId > 1">
+                                     <img :src="client.ClientLogo" style="max-width:61px; height:47px; margin-right: 7px; white-space: nowrap"> {{client.ClientName}}
+                                     <span class="status" v-bind:class="[client.StatusId == 1 ? 'active' : 'inactive']">{{client.StatusId == 1 ? 'Active' : 'Inactive'}} </span>
+                            </li>
+                        </ul>
+                    </div>
+                </div> -->
+
+            <label class="pull-right">
+
+                <span class="back"></span>
+
+
+            </label>
+            <div class=" col-md-12 form-group">
+                <label>current password</label>
+                <input  type="password" v-model="UserPassword" name="currentpassword"
+                @blur="validateField('UserPassword', UserPassword, 'required')"
+                @input="validateField('UserPassword', UserPassword, 'required')"
+                    class="form-control">
+            </div>
+            <!-- <div class="form-group">
+                <label>new password</label>
+                <input  type="password" v-model="newpassword" name="currentpassword"  class="form-control" placeholder="newPassword">
+            </div>
+            <div class="form-group">
+                <label>confirm new password</label>
+                <input  type="password" v-model="confirmPassword" name="currentpassword"  class="form-control" placeholder="confirm newPassword">
+            </div> -->
+            <div class="col-md-12 form-group">
+                <label>New Password:</label>
+                <input  v-model="newpassword" name="password" type="password"
+                @blur="validateField('newpassword', newpassword, 'required')"
+                @input="validateField('newpassword', newpassword, 'required')"
+                    class="form-control">
+            </div>
+            <div class=" col-md-12 form-group">
+                <label>Confirm New Password:</label>
+                <input v-model="confirmPassword" name="password_confirmation"
+                @blur="validateField('confirmPassword', confirmPassword, { required: true, confirmed: newpassword })"
+                @input="validateField('confirmPassword', confirmPassword, { required: true, confirmed: newpassword })"
+                    type="password" class="form-control" data-vv-as="password">
+            </div>
+
+            <div class="alert alert-danger" v-show="hasErrors">
+                <div v-if="errors.UserPassword">
+                    {{ errors.UserPassword }}
+                </div>
+
+                <div v-if="errors.newpassword">
+                    {{ errors.newpassword }}
+                </div>
+                <div v-if="errors.confirmPassword">
+                    {{ errors.confirmPassword }}
+                </div>
+            </div>
+            <div class=" col-md-12 form-group">
+                <button class="btn btn-success btn-sm" @click="changePassword">change</button>
+                <button class="btn btn-danger btn-sm" @click="togglepassword">cancel</button>
+            </div>
+
+
+
+        </div>
+
+
+    </div>
+    <!-- password -->
+
+
+
+
+
+
+    <div class="menuMaskNCL" @click="showClientPanel"></div>
+    <div class="clientList">
+        <div class="sideBarHeading">
+            <h6>Client List </h6>
+        </div>
+
+
+        <div class="col-md-12 pt-3">
+            <ul class="listMenu">
+                <li v-for="client in filterClientList" :key="client.ClientId" @click="viewClientDetailById(client)">
+                    <img v-if="client.ClientLogo  && client.ClientLogo !== 'null'  && client.ClientLogo !== ''  "
+                        :src="imageURLS(client.ClientLogo)"
+                        style="max-width:61px; height:47px; margin-right: 7px; white-space: nowrap">
+                    <img v-else style="max-width:61px; height:47px; margin-right: 7px; white-space: nowrap"
+                        class="dummyListLogo" />{{client.ClientName}}
+                    <span class="status" v-bind:class="[client.StatusId == 1 ? 'active' : 'inactive']">{{client.StatusId
+                        == 1 ? 'Active' : 'Inactive'}} </span>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- <div class="menuMaskNCL" @click="showPropertyPanel"></div>
+        <div class="propertyList">
+                <div class="sideBarHeading">
+                    <h6>Property List </h6>
+                </div>
+   
+   
+                <div class="col-md-12 pt-3">
+                    <ul class="listMenu">
+                        <li v-for="property in propertyList">
+                             <span>{{property.PropertyName}}</span>    
+                        </li>
+                    </ul>
+                </div>
+        </div> -->
+
+
+    <!-- <div class="menuMaskNCL" ></div>
+        <div class="password">
+            <div class="sideBarHeading">
+                <h6>password </h6>
+            </div>
+
+
+           
+        </div> -->
+</div>

@@ -1,0 +1,19 @@
+<div class="infiniteBody">
+  <virtual-list :items="items" uniqueKey="id" :iscrollOptions="options" :variable="variable" :infinite="true" :pulldown="true"
+    :pulldownText="pullDownTextObj" @loadMore="getMoreData" @pullRefresh="refreshData">
+    <template slot="content" slot-scope="props">
+      <div class="demo-item" style="height: 75px">
+        <span>
+          {{props.item.GuestFullName}}
+        </span>
+        <span>
+          {{props.item.Persons}}
+        </span>
+        <span>
+          {{props.item.BookedBy}}
+        </span>
+      </div>
+    </template>
+  </virtual-list>
+</div>
+

@@ -1,0 +1,844 @@
+<div class="panel panel-default">
+
+  <div class="panel-heading">
+    <!--<h4 class="pull-left">Reservation List</h4>-->
+    <button class="btn btn-default btn-sm btn-sm-icon" @click="toggleFilterPanel = !toggleFilterPanel" style="padding: 0.23rem 0.5rem;">
+      <i class="fa fa-filter" aria-hidden="true" title="Filters" style="font-size: 14px;"></i>
+    </button>
+    <div class="btn-group btnGroupScrollWrap tagBtnGrp">
+      <div class="btn-group " id="tagScrollSection">
+        <!-- <label>Property:</label> -->
+        <!-- <select class="form-control" v-model="filterObj.PropertyId" @change="displayUnitList">
+          <option value="-99">All Properties</option>
+          <option v-for="property in propertyList" :value="property.PropertyId">{{property.PropertyName}}</option>
+        </select> -->
+
+        <!-- <label>Unit Type:</label> -->
+        <!-- <select class="form-control" v-model="filterObj.UnitClassId">
+          <option value="-99">All Unit Types</option>
+          <option v-for="unit in unitClassList" :value="unit.UnitClassId">{{unit.UnitClassName}}</option>
+        </select> -->
+
+        <!-- <label v-if="filterObj.ViewListId === 1">Source</label> -->
+        <!-- <select class="form-control" v-if="filterObj.ViewListId === -1" v-model="filterObj.resSourceId">
+          <option value="-99">All Sources</option>
+          <option v-for="source in sourceList" :value="source.sourceID">{{source.sourceName}}</option>
+        </select> -->
+
+        <!-- <button class="btn btn-default btn-sm" @click="applyFilter()" :disabled="fncIsReservationSelect && (fncIsReservationSelect.isAssigned === -1 && fncIsReservationSelect.functionState === 2)"
+          v-if="fncIsReservationSelect && (fncIsReservationSelect.isAssigned === 1 || (fncIsReservationSelect.isAssigned === -1 && fncIsReservationSelect.functionState === 2))">
+          Apply Filter
+        </button> -->
+        <ul class="tagDetail scrollingTags">
+          <li v-if="viewSaveObject.properties.length === 0">
+            <span class="filterTags">
+              <span>All Properties</span>
+            </span>
+          </li>
+          <li v-else v-for="(property, index) in viewSaveObject.properties">
+            <span class="tags">
+              <span>{{'Property: ' + property.PropertyName}}</span>
+              <i class="far fa-times" @click="deleteSelectedPropertyFromFilter(index, property)"></i>
+            </span>
+          </li>
+          <li v-if="viewSaveObject.UnitClasses.length === 0">
+            <span class="filterTags">
+              <span>All Unit Classes</span>
+            </span>
+          </li>
+          <li v-else v-for="(UnitClass, index) in viewSaveObject.UnitClasses">
+            <span class="tags">
+              <span>{{'Unit Class: '+ UnitClass.UnitClassName}}</span>
+              <i class="far fa-times" @click="deleteSelectedUnitClassFromFilter(index, UnitClass)"></i>
+            </span>
+          </li>
+          <!-- unitTypes -->
+          <li v-if="viewSaveObject.UnitTypes.length === 0 && isHostModeObj &&  !isHostModeObj[0].IsHostMode">
+              <span class="filterTags">
+                <span>All Unit Types</span>
+              </span>
+            </li>
+            <li v-else v-for="(UnitType, index) in viewSaveObject.UnitTypes">
+              <span class="tags">
+                <span>{{'Unit Type: '+ UnitType.UnitTypeName}} ({{UnitType.propertyNickName}})</span>
+                <i class="far fa-times" @click="deleteSelectedUnitTypeFromFilter(index, UnitType)"></i>
+              </span>
+            </li>
+          <!-- unittypes -->
+          <li v-for="(unit, index) in viewSaveObject.units">
+            <span class="tags">
+              <span>{{'Unit: '+ unit.UnitName}}</span>
+              <i class="far fa-times" @click="deleteSelectedUnitFromFilter(index, unit)"></i>
+            </span>
+          </li>
+          <li v-for="(status, index) in viewSaveObject.statusList">
+            <span class="tags">
+              <span>{{'Status: '+ status.StatusName}}</span>
+              <i class="far fa-times" @click="deleteSelectedStatusFromFilter(index, status)"></i>
+            </span>
+          </li>
+          <li v-if="viewSaveObject.sources.length === 0">
+            <span class="filterTags">
+              <span>All Sources</span>
+            </span>
+          </li>
+          <li v-else v-for="(source, index) in viewSaveObject.sources">
+            <span class="tags">
+              <span>{{'Source: ' + source.sourceName}}</span>
+              <i class="far fa-times" @click="deleteSelectedSourceFromFilter(index, source)"></i>
+            </span>
+          </li>
+          <li v-for="(searchText,index) in filterObj.SearchText">
+            <span class="tags">
+              <span>{{'SearchText: ' +searchText}}</span>
+              <i class="far fa-times" @click="deleteSearchText(index,searchText)"></i>
+            </span>
+          </li>
+          <li v-if="filterObj.showUnAllocatedReservations">
+              <span  class="tags">
+                  <span >Unallocated Reservations</span>
+                  <i class="far fa-times" @click="deleteUnAllocatedReservations()"></i>
+              </span>
+          </li>
+          <li v-if="filterObj.includeObsoleteInventory">
+            <span  class="tags">
+                <span>Obsolete Inventory</span>
+                <i class="far fa-times" @click="deleteIncludeObsoleteInventory()"></i>
+            </span>
+        </li>
+   
+          <!-- <li v-if="viewSaveObject.tags.length === 0">
+            <span class="tags">
+              <span>All Tags</span>
+            </span>
+          </li> -->
+          <li v-if="viewSaveObject.tags.length !== 0" v-for="(tag, index) in viewSaveObject.tags" class="filerTag">
+            <span class="tags resTags">
+              <span>{{tag.TagName}}</span>
+              <i class="far fa-times" @click="deleteSelectedTagFromFilter(index, tag)"></i>
+            </span>
+          </li>
+          <li v-for="listCol in viewSaveObject.columns" v-if="viewSaveObject.columns.length > 0">
+            <span v-for="(text, textIndex) in listCol.arrText" v-if="text" class="tags">
+              <span>{{listCol.label + ': ' + text}}</span>
+              <i class="far fa-times" @click="removeSelectedColumnTextFromFilter(text, listCol)"></i>
+            </span>
+            <span v-if="listCol.type == 'date' && (listCol.rangeVal || listCol.value)" class="tags">
+              <span>{{listCol.label + ': ' + (listCol.value ? listCol.value : '') + (listCol.rangeVal ? (listCol.value ? ' - ':
+                '') + listCol.rangeVal : '')}}</span>
+              <i class="far fa-times" @click="removeSelectedColumnTextFromFilter(null, listCol)"></i>
+            </span>
+          </li>
+          
+          <li v-if="filterObj.stayStartDate && filterObj.stayEndDate">
+            <span  class="tags">
+              <span>{{'Stay Date(s)' + ': ' + (filterObj.stayStartDate ? filterObj.stayStartDate : '') + (filterObj.stayEndDate ? (filterObj.stayStartDate ? ' - ':
+                '') + filterObj.stayEndDate : '')}}</span>
+              <i class="far fa-times" @click="removeSelectedStayDatesFromFilter(filterObj)"></i>
+            </span>
+          </li>
+
+          <li v-if="viewAttrsChanged" @click="clearAllFilters">
+            <span style="color: #dc3545; cursor: pointer;"> Clear Filters</span>
+          </li>
+        </ul>
+
+        <button class="btn btn-default btn-sm scrbarBtn" v-if="false && viewObjectChanged && (!selectedViewObj || (selectedViewObj && !selectedViewObj.ViewId))"
+          @click="saveView" disabled>
+          Save View
+        </button>
+        <button class="btn btn-default btn-sm scrbarBtn" v-if="false && viewObjectChanged && selectedViewObj && selectedViewObj.ViewId"
+          @click="updateView" disabled>
+          Update View
+        </button>
+        <button class="btn btn-default btn-sm scrbarBtn" v-if="false && viewObjectChanged && selectedViewObj && selectedViewObj.ViewId"
+          @click="saveasView" disabled>
+          Save As View
+        </button>
+      </div>
+    </div>
+    <button v-if="scrlBtns " @click="scrollLeft" class="btn btn-default dropdown-toggle btn-sm" style="height:26px; box-shadow: none; background: #dee5f5">
+      <i class="fas fa-angle-left"></i>
+    </button>
+    <button v-if="scrlBtns " @click="scrollRight" class="btn btn-default dropdown-toggle btn-sm mr-0" style="height:26px; box-shadow: none; background: #dee5f5">
+      <i class="fas fa-angle-right"></i>
+    </button>
+    <!-- <tagComponent canReadOnly="true" :assignCallback="addTagToFilters" :deAssignCallback="deleteTagFromFilters" :clearTags="clearTags"
+        :viewId="selectedViewObj && selectedViewObj.ViewId"></tagComponent>-->
+    <div class="btn-group pull-right">
+      <!-- <input type="text" placeholder="Tags" class="form-control" /> -->
+      <div class="dropdown mainDD keep-open">
+        <button title="Views" class="btn btn-default dropdown-toggle  btn-sm btn-sm-icon" type="button" data-toggle="dropdown" @click="switchView"
+          :disabled="fncIsReservationSelect && (fncIsReservationSelect.isAssigned === -1 && fncIsReservationSelect.functionState === 2)"
+          v-if="fncIsReservationSelect && (fncIsReservationSelect.isAssigned === 1 || (fncIsReservationSelect.isAssigned === -1 && fncIsReservationSelect.functionState === 2))">
+          <i class="fa fa-eye"></i>
+        </button>
+
+        <ul class="dropdown-menu">
+          <li class="heading">views</li>
+          <li>
+            <li v-for="view in viewList">
+              <label class="radioLabel" v-bind:class="{viewsDisable:loading}">
+                <input type="radio" name="propertyCheck" :value="view.ViewListId" v-model="filterObj.ViewListId" @click="reservationsView(view)"
+                  :disabled="(fncIsReservationSelect && (fncIsReservationSelect.isAssigned === -1 && fncIsReservationSelect.functionState === 2))|| loading"
+                  v-if="fncIsReservationSelect && (fncIsReservationSelect.isAssigned === 1 || (fncIsReservationSelect.isAssigned === -1 && fncIsReservationSelect.functionState === 2))"
+                />
+                <span v-text="view.Label"></span>
+
+              </label>
+              <span class="filterLoad" v-show="view.isSortLoading"></span>
+            </li>
+            <li v-for="view in customViewList">
+              <label class="radioLabel">
+                <input type="radio" name="propertyCheck" :value="view.ViewId" v-model="filterObj.ViewListId" @click="reservationsView(view)"
+                  :disabled="fncIsReservationSelect && (fncIsReservationSelect.isAssigned === -1 && fncIsReservationSelect.functionState === 2)"
+                  v-if="fncIsReservationSelect && (fncIsReservationSelect.isAssigned === 1 || (fncIsReservationSelect.isAssigned === -1 && fncIsReservationSelect.functionState === 2))"
+                />
+                <span v-text="view.ViewName"></span>
+
+              </label>
+              <span class="filterLoad" v-show="view.isSortLoading"></span>
+            </li>
+          </li>
+        </ul>
+      </div>
+      <div class="dropdown mainDD keep-open">
+        <button title="Column Chooser" class="btn btn-default dropdown-toggle  btn-sm btn-sm-icon" type="button" data-toggle="dropdown"
+          :disabled="fncIsReservationSelect && (fncIsReservationSelect.isAssigned === -1 && fncIsReservationSelect.functionState === 2)"
+          v-if="fncIsReservationSelect && (fncIsReservationSelect.isAssigned === 1 || (fncIsReservationSelect.isAssigned === -1 && fncIsReservationSelect.functionState === 2))">
+          <i class="fa fa-columns"></i>
+        </button>
+
+        <ul class="dropdown-menu">
+          <li class="heading">Column Chooser</li>
+          <li v-for="column in headerColumnList">
+            <label v-if="column.ColumnName == 'TotalAmount' ? Amountlabel : true" class="checkLabel">
+              <input type="checkbox" :id="column.Label" v-model="column.IsChecked" @change="selectColumn(column, $event)" />
+              <span v-text="column.Label"></span>
+            </label>
+          </li>
+        </ul>
+      </div>
+      <div class="dropdown">
+        <button title="Export Options" class="btn btn-default dropdown-toggle  btn-sm btn-sm-icon" type="button" data-toggle="dropdown"
+          :disabled="fncIsReservationReports && (fncIsReservationReports.isAssigned === -1 && fncIsReservationReports.functionState === 2)"
+          v-if="fncIsReservationReports && (fncIsReservationReports.isAssigned === 1 || (fncIsReservationReports.isAssigned === -1 && fncIsReservationReports.functionState === 2))">
+          <!-- <i class="fa fa-ellipsis-v"></i> -->
+          <i class="fas fa-download"></i>
+        </button>
+
+        <div class="dropdown-menu">
+          <li class="heading">Export Options</li>
+          <!-- <li @click="exportToExcelOrPdf('Pdf','reservation')">
+            <label>
+              <i class="fa fa-file-pdf-o"></i> Export to PDF</label>
+          </li> -->
+          <li @click="exportToExcelOrPdf('Excel','reservation', 'Exporting Reservation list to Excel')">
+            <label>
+              <i class="fa fa-file-excel-o"></i> Reservation List</label>
+          </li>
+          <li @click="exportToExcelOrPdf('Excel','Folio Detail', 'Exporting Folio details to Excel')">
+            <label>
+              <i class="fa fa-file-excel-o"></i> Folio Detail</label>
+          </li>
+          <li @click="exportToExcelOrPdf('Excel','Folio Summary', 'Exporting Folio summary to Excel')">
+            <label>
+              <i class="fa fa-file-excel-o"></i> Folio Summary</label>
+          </li>
+          <!-- <li>
+            <label>
+              <i class="fa fa-print"></i> Print</label>
+          </li> -->
+        </div>
+      </div>
+      <button class="btn btn-default btn-sm" @click="switchView" v-if="false">
+        <i v-if="tempListType === 'list'" class="fa fa-th-large"></i>
+        <i v-if="tempListType !== 'list'" class="fa fa-table"></i>
+      </button>
+    </div>
+  </div>
+
+  <div>
+    <span class="defaultView" v-if="items">
+      <span v-if="filterObj.ViewListId === -1">Showing All Reservations View, </span>
+      <span v-if="filterObj.ViewListId === -2">Showing Currently In House View, </span>
+      <span v-if="filterObj.ViewListId === -3">Showing Arriving Today View, </span>
+      <span v-if="filterObj.ViewListId === -4">Showing Departing Today View, </span>
+      <span v-if="filterObj.ViewListId === -5">Showing Upcoming Reservations View, </span>
+      <span v-if="filterObj.ViewListId === -6">Showing Today's Reservations View, </span>
+      <span v-if="filterObj.ViewListId === -7">Showing Departures View, </span>
+      <span v-else>{{selectedViewObj ? selectedViewObj.ViewName : ''}}</span>
+
+      <span v-if="items.length>1" style="font-size: 12px">{{totalLength}} Reservations</span>
+      <span v-else-if="(items.length === 1) || (items.length<1)" style="font-size: 12px">{{totalLength}} Reservation</span>
+    </span>
+  </div>
+  <div class="panel-body">
+    <pageLoadingComponent v-show="loading"></pageLoadingComponent>
+
+    <div v-show="isGreyOut" style="position: fixed; background: rgba(0, 0, 0, 0.41); left: 0; top: 0; width: 100%; height: 100vh; z-index: 1030;"></div>
+    <div class="ResGrid">
+      <div class="dTable">
+        <div class="dTHead">
+          <div v-for="column in headerColumnList" v-if="column.ColumnName == 'TotalAmount' ? Amountlabel && column.IsChecked : column.IsChecked"
+            v-bind:class="column.Label" class="resTh dCell">
+            <div class="dTableSortWrap">
+              <span v-text="column.Label" v-if="column.ColumnName == 'Actions'" v-bind:class="column.Label"></span>
+              <span class="dropdown mainDD keep-open " v-if="column.ColumnName !== 'Actions'">
+                <button class="btn dropdown-toggle resListSortBtn" type="button" data-toggle="dropdown">
+                  <span class="colLabel" v-text="column.Label" v-bind:class="column.Label"></span>
+                  <i class="fa resListSortIcon" :class="column.isAscOrDesc"></i>
+                </button>
+                <ul class="resListSortMenu dropdown-menu">
+                  <li class="heading">Sort By</li>
+                  <li  v-for="sortby in column.sortLabels" v-if="column.ColumnName !== 'Actions'" :class="sortby.isSortAscOrDesc" @click="ascSort(sortby.ColumnName, sortby.SortOder)">
+                    <span>{{sortby.Label}}</span>
+                    <i v-if="sortby.isSortAscOrDesc == 'asc'" class="fa fa-arrow-up"></i>
+                    <i v-if="sortby.isSortAscOrDesc == 'desc'" class="fa fa-arrow-down"></i>
+                    <span :class="column.class" v-show="sortby.isSortLoading"></span>
+                  </li>
+
+                  <!-- <li v-if="column.ColumnName !== 'Actions' && column.Label == 'Stay'" v-for="sortby in column.sortLabels"  ><span>{{sortby.Label}}</span><i class="fa sort-up" @click="ascSort(sortby.ColumnName, 'asc')" :class="{ active: (sortby.isActive == sortby.ColumnName && column.isAscOrDesc === 'asc') }"></i><i class="fa sort-dwn" @click="ascSort(sortby.ColumnName, 'desc')" :class="{ active: (sortby.isActive == sortby.ColumnName && column.isAscOrDesc === 'desc') }"></i><span :class="column.class" v-show="sortby.isSortLoading"></span></li>
+                      <li v-if="column.ColumnName !== 'Actions' && column.Label == 'Unit'" v-for="sortby in column.sortLabels"  ><span>{{sortby.Label}}</span><i class="fa sort-up" @click="ascSort(sortby.ColumnName, 'asc')" :class="{ active: (sortby.isActive == sortby.ColumnName && column.isAscOrDesc === 'asc') }"></i><i class="fa sort-dwn" @click="ascSort(sortby.ColumnName, 'desc')" :class="{ active: (sortby.isActive == sortby.ColumnName && column.isAscOrDesc === 'desc') }"></i><span :class="column.class" v-show="sortby.isSortLoading"></span></li>
+                      <li v-if="column.ColumnName !== 'Actions' && column.Label == 'Status'" v-for="sortby in column.sortLabels"  ><span>{{sortby.Label}}</span><i class="fa sort-up" @click="ascSort(sortby.ColumnName, 'asc')" :class="{ active: (sortby.isActive == sortby.ColumnName && column.isAscOrDesc === 'asc') }"></i><i class="fa sort-dwn" @click="ascSort(sortby.ColumnName, 'desc')" :class="{ active: (sortby.isActive == sortby.ColumnName && column.isAscOrDesc === 'desc') }"></i><span :class="column.class" v-show="sortby.isSortLoading"></span></li>
+                      <li v-if="column.ColumnName !== 'Actions' && column.Label == 'Amount'" v-for="sortby in column.sortLabels"  ><span>{{sortby.Label}}</span><i class="fa sort-up" @click="ascSort(sortby.ColumnName, 'asc')" :class="{ active: (sortby.isActive == sortby.ColumnName && column.isAscOrDesc === 'asc') }"></i><i class="fa sort-dwn" @click="ascSort(sortby.ColumnName, 'desc')" :class="{ active: (sortby.isActive == sortby.ColumnName && column.isAscOrDesc === 'desc') }"></i><span :class="column.class" v-show="sortby.isSortLoading"></span></li> -->
+                  <!-- <ul class="resListSortSubMenu">
+                      <li  v-if="column.ColumnName !== 'Actions' && column.Label == 'Guest Name'" v-for="sortby in column.sortLabels" @click="ascSort(sortby.ColumnName, 'desc')" :class="{ active: (sortby.isActive == sortby.ColumnName && column.isAscOrDesc === 'desc') }"><span>{{sortby.Label}}</span><i class="fa sort-dwn"></i><span :class="column.class" v-show="sortby.isSortLoading && column.isAscOrDesc === 'desc'"></span></li>
+                      <li v-if="column.ColumnName !== 'Actions' && column.Label == 'Stay'" v-for="sortby in column.sortLabels" @click="ascSort(sortby.ColumnName, 'desc')" :class="{ active: (sortby.isActive == sortby.ColumnName && column.isAscOrDesc === 'desc') }"><span>{{sortby.Label}}</span><i class="fa sort-dwn"></i><span :class="column.class" v-show="sortby.isSortLoading && column.isAscOrDesc === 'desc'"></span></li>
+                      <li v-if="column.ColumnName !== 'Actions' && column.Label == 'Unit'" v-for="sortby in column.sortLabels" @click="ascSort(sortby.ColumnName, 'desc')" :class="{ active: (sortby.isActive == sortby.ColumnName && column.isAscOrDesc === 'desc') }"><span>{{sortby.Label}}</span><i class="fa sort-dwn"></i><span :class="column.class" v-show="sortby.isSortLoading && column.isAscOrDesc === 'desc'"></span></li>
+                      <li v-if="column.ColumnName !== 'Actions' && column.Label == 'Status'" v-for="sortby in column.sortLabels" @click="ascSort(sortby.ColumnName, 'desc')" :class="{ active: (sortby.isActive == sortby.ColumnName && column.isAscOrDesc === 'desc') }"><span>{{sortby.Label}}</span><i class="fa sort-dwn"></i><span :class="column.class" v-show="sortby.isSortLoading && column.isAscOrDesc === 'desc'"></span></li>
+                      <li v-if="column.ColumnName !== 'Actions' && column.Label == 'Amount'" v-for="sortby in column.sortLabels" @click="ascSort(sortby.ColumnName, 'desc')" :class="{ active: (sortby.isActive == sortby.ColumnName && column.isAscOrDesc === 'desc') }"><span>{{sortby.Label}}</span><i class="fa sort-dwn"></i><span :class="column.class" v-show="sortby.isSortLoading && column.isAscOrDesc === 'desc'"></span></li>
+                    </ul> -->
+                  <!-- <li v-if="column.ColumnName !== 'Actions'" @click="ascSort(column.ColumnName, 'asc')">
+                      <span v-if="column.Label == 'Guest Name'">Guest First Name</span>
+                      <span v-if="column.Label == 'Stay'">Check-In</span>
+                      <span v-if="column.Label == 'Unit'">Unit Number</span>
+                      <span v-if="column.Label == 'Status'">Status</span>
+                      <span v-if="column.Label == 'Amount'">Balance</span>
+                      <i class="fa sort-up"></i>
+                      <span :class="column.class" v-show="column.isSortLoading && column.isAscOrDesc === 'asc'"></span>
+                    </li>
+                    <li v-if="column.ColumnName !== 'Actions'" @click="ascSort(column.ColumnName, 'desc')">
+                      <span v-if="column.Label == 'Guest Name'">Guest First Name</span>
+                      <span v-if="column.Label == 'Stay'">Check-In</span>
+                      <span v-if="column.Label == 'Unit'">Unit Number</span>
+                      <span v-if="column.Label == 'Status'">Status</span>
+                      <span v-if="column.Label == 'Amount'">Balance</span>
+                      <i class="fa sort-dwn"></i>
+                      <span :class="column.class" v-show="column.isSortLoading && column.isAscOrDesc === 'desc'"></span>
+                    </li> -->
+                </ul>
+              </span>
+            </div>
+          </div>
+
+        </div>
+        <div v-show="linearProgress">
+          <div class="loader"></div>
+        </div>
+        <div class="dTBody resList">
+          <virtual-list v-if="items.length" :items="items" uniqueKey="id" :iscrollOptions="options" :variable="variable" :infinite="true"
+            :pulldown="false" :pulldownText="pullDownTextObj" @loadMore="getMoreData" @pullRefresh="refreshData">
+
+            <template slot="content" slot-scope="props">
+              <reservationItem :id="props.item.ReservationId" :isHostMode="isHostModeObj" :resDeatil="reservationsListObj[props.item.ReservationId] ? reservationsListObj[props.item.ReservationId].resObj : null"
+                :changeStatus="changeStatus" v-if="props.item.ReservationId" :summarycallback="openResSummaryPanel"></reservationItem>
+
+              <!-- <div class="dTBodyRow">
+                <div class="dCell Actions" v-if="headerColumnList.Actions.IsChecked">
+                  <div>
+                    <button :disabled="!checkOutbutton" v-if="props.item.isCheckOut && props.item.isCheckOut == 1 && props.item.IsActionEnable == 1"
+                      class="btn btn-default check-out-icon" @click="changeStatus(props.item.nextStatusId, props.item.ReservationId)"
+                      title="Check-Out"></button>
+                    <button :disabled="!checkinbutton" v-if="props.item.isCheckIn && props.item.isCheckIn == 1 && props.item.IsActionEnable == 1"
+                      class="btn btn-default check-in-icon" @click="changeStatus(props.item.nextStatusId , props.item.ReservationId)"
+                      title="Check-In"></button>
+                    <span v-else></span>
+                  </div>
+                </div>
+                <div class="dCell Status" v-if="headerColumnList.Status.IsChecked" @click="showReservationSummaryPanel(props.item)">
+                  <div class="statusTypeDiv">
+                    <span class="statusType" v-bind:class="props.item.StatusName">{{props.item.StatusName}}</span>
+                  </div>
+                  <span class="source" v-bind:class="props.item.SubSourceName" v-if="props.item.SubSourceName && props.item.SubSourceName !== null">
+                    <strong class="sm">{{props.item.SubSourceName}}</strong>
+                  </span>
+                  <span v-else class="source" v-bind:class="props.item.SourceName">
+                    <strong class="sm">{{props.item.SourceName}}</strong>
+                  </span>
+                </div>
+                <div class="dCell" v-if="headerColumnList.GuestName.IsChecked" @click="showReservationSummaryPanel(props.item)">
+                  <strong v-bind:title="props.item.GuestFirstName + props.item.GuestLastName" style="width:200px; float:left; white-space: nowrap; text-overflow:ellipsis; overflow: hidden">{{props.item.GuestFullName}}</strong>
+                  <div class="persons">
+                    <span v-if="props.item.Persons === null && props.item.NumberOfAdults !== null">{{props.item.NumberOfAdults}}</span>
+                    <span v-if="props.item.Persons === null && props.item.NumberOfAdults === 1">Adult</span>
+                    <span v-else-if="props.item.Persons === null && props.item.NumberOfAdults !== 1">Adults</span>
+                    <span v-if="props.item.Persons === null">,</span>
+                    <span v-if="props.item.Persons === null && props.item.NumberOfChildren !== null">{{props.item.NumberOfChildren}}</span>
+                    <span v-if="props.item.Persons === null && props.item.NumberOfChildren === 1">Child</span>
+                    <span v-else-if="props.item.Persons === null && props.item.NumberOfChildren !== 1">Children</span>
+                    <span v-else-if="props.item.Persons !== null">{{props.item.Persons}}</span>
+                    <span v-if="props.item.Persons !== null && props.item.Persons === 1">Person</span>
+                    <span v-else-if="props.item.Persons !== null && props.item.Persons !== 1">Persons</span>
+                  </div>
+                </div>
+                <div class="dCell Stay" v-if="headerColumnList.StartDate.IsChecked" @click="showReservationSummaryPanel(props.item)">
+                  <div class="dates">
+                    <strong>{{formatStartDate(props.item.originalStartDate)}}</strong>
+                    <strong>{{formatEndDate(props.item.originalEndDate)}}</strong>
+                  </div>
+
+
+                  <div style="position: relative;">
+                    <span style="position: absolute;" v-if="formatStartYear(props.item.originalStartDate) != null">{{formatStartYear(props.item.originalStartDate)}}</span>
+                    <span v-if="props.item.Nights > 1" style="width: 130px; float: left; text-align: right; font-size: 13px; margin-top: 0px; margin-left: 9px;">{{props.item.Nights + ' Nights'}}
+                    </span>
+                    <span v-else style="width: 130px; float: left; text-align: right; font-size: 13px; margin-top: 3px; margin-left: 9px;">{{props.item.Nights + ' Night'}}
+                    </span>
+                  </div>
+                </div>
+                <div class="dCell Date Booked" v-if="headerColumnList.BookedBy.IsChecked" @click="showReservationSummaryPanel(props.item)">
+                  <strong v-if="props.item.DateBooked && props.item.DateBooked != null && props.item.DateBooked != ''">{{formatDateBooked(props.item.DateBooked)}}
+                    <span>{{formatYear(props.item.DateBooked)}}</span>
+                  </strong>
+                  <span v-bind:class="props.item.BookedBy" v-if="props.item.BookedBy && props.item.BookedBy != null && props.item.BookedBy != ''">{{props.item.BookedBy}}</span>
+
+                </div>
+                <div class="dCell Unit" v-if="headerColumnList.Unit.IsChecked" @click="showReservationSummaryPanel(props.item)">
+                  <div class="UnitClassDiv">
+                    <span class="UnitClass" v-bind:class="props.item.ListColourcode">{{props.item.UnitClassName}}</span>
+                  </div>
+                  <span>
+                    <span class="UnitClassFont sm" v-if="props.item.PropertyNickName && props.item.UnitNickName && props.item.PropertyNickName !== null && props.item.UnitNickName !== null">{{props.item.PropertyNickName}} - {{props.item.UnitNickName}}</span>
+                    <span class="UnitClassFont sm" v-else>{{props.item.PropertyName}} - {{props.item.UnitName}}</span>
+
+                  </span>
+
+                </div>
+
+                <div class="dCell Amount" :disabled="fncIsFolioView && (fncIsFolioView.isAssigned === -1 && fncIsFolioView.functionState === 2)"
+                  v-if="fncIsFolioView && (fncIsFolioView.isAssigned === 1 || (fncIsFolioView.isAssigned === -1 && fncIsFolioView.functionState === 2)) && headerColumnList.Amount.IsChecked"
+                  @click="showReservationSummaryPanel(props.item)">
+                  <ul>
+                    <li>
+                      <strong v-if="(props.item.BalanceRate === props.item.TotalRate) && props.item.BalanceRate !== null" v-text="formatMoney(props.item.BalanceRate)"
+                        class="dueAmount"></strong>
+                    </li>
+                    <li>
+                      <strong v-if="(props.item.BalanceRate !== props.item.TotalRate) && props.item.BalanceRate !== null" v-text="formatMoney(props.item.BalanceRate)"
+                        class="payAmount"></strong>
+                    </li>
+                    <li>
+                      <strong v-if="props.item.TotalRate !== null" v-text="formatMoney(props.item.TotalRate)" class="totalAmount"></strong>
+                    </li>
+                  </ul>
+                </div>
+              </div> -->
+            </template>
+
+
+          </virtual-list>
+          <div v-if="items.length == 0" v-show="!loading">
+            <span>There are no reservations to show in this view</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- <div v-if="items.length == 0">
+      <span>There are no reservations to show in this view</span>
+    </div> -->
+
+    <!-- Starts Folio Summary-->
+
+    <reservationSummaryPanel :reservationObj="currResObj" :parentCallback="panelCallback" :updateReservationObj="updateReservationObj"></reservationSummaryPanel>
+    <!-- End Folio Summary-->
+    <div id="app">
+      <foliomodal v-show="isModalVisibleVal" @close="folioRecalculateCloseModal" :params="modalParams" />
+    </div>
+    <div id="app">
+      <!-- <button
+            type="button"
+            class="btn"
+            @click="showModal"
+          >
+            Open Modal!
+          </button> -->
+
+      <modal v-show="isModalVisible" @close="closeModal" :viewObj="viewSaveObject" :saveCallback="viewSaveCallback" />
+    </div>
+
+
+  </div>
+  <div class="menuMaskN" :class="toggleFilterPanel ? 'toggleFilterMask' : ''" @click="closeFilter()"></div>
+  <!-- Custom Filters Panel -->
+  <div :class="['rightSideBar', 'resList', toggleFilterPanel ? 'expand animated fadeInRight' : '']" v-if="toggleFilterPanel">
+    <div class="sideBarHeading">
+      <h6>Listing Filters</h6>
+    </div>
+    <div class="sideFilterPanel resFilters col-md-12 mt-3 mb-0">
+      <div class="row">
+        <div class="col-md-12">
+          <div class="form-group pos-relative">
+            <label>Property Names</label>
+            <div class="col-md-12 searchResultsAmenitiesDiv" @click="showFilterByType('property')">
+              <ul class="todo-list">
+                <li v-for="property in filterObj.Properties">
+                  <span class="tags">
+                    <span>{{property.PropertyName}}</span>
+                    <i class="far fa-times" @click="removePropertyFromFilter(property, $event)"></i>
+                  </span>
+                </li>
+              </ul>
+              <input type="text" placeholder="Click here to new property..." @click="showpropertyFnc()" v-model.trim="filterSearchPropertyText">
+            </div>
+     
+            <div class="form-control searchResultsAmenities" @click="$event.stopPropagation()" id="propertyDropDown" v-show=" showPropertyList || selectedFilterColumn == 'property'">
+              <ul>
+                <li v-for="property in propertyList" v-bind:value="property" @click="addPropertyToFilter(property)">{{property.PropertyName}}</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-12">
+          <div class="form-group pos-relative">
+            <label>Unit Classes</label>
+            <div class="col-md-12 searchResultsAmenitiesDiv" @click="showFilterByType('UnitClass')">
+              <ul class="todo-list">
+                <li v-for="unit in filterObj.UnitClasses">
+                  <span class="tags">
+                    <span>{{unit.UnitClassName}}</span>
+                    <i class="far fa-times" @click="removeUnitClassFromFilter(unit, $event)"></i>
+                  </span>
+                </li>
+              </ul>
+              <input type="text" placeholder="Click here to new unit..." @click="showUnitClassFnc()" v-model.trim="filterSearchUnitClassText">
+            </div>
+
+            <div class="form-control searchResultsAmenities" @click="$event.stopPropagation()" id="UnitClassDropDown" v-show=" showunitList || selectedFilterColumn == 'UnitClass'">
+              <ul>
+                <li v-for="unit in unitClassList" v-bind:value="unit" @click="addUnitClassToFilter(unit)">{{unit.UnitClassName}}</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div v-if="isHostModeObj &&  !isHostModeObj[0].IsHostMode" class="col-md-12">
+            <div class="form-group pos-relative">
+              <label>Unit Types</label>
+              <div class="col-md-12 searchResultsAmenitiesDiv" @click="showFilterByType('UnitType')">
+                <ul class="todo-list">
+                  <li v-for="unitType in filterObj.UnitTypes">
+                    <span class="tags">
+                      <span>{{unitType.UnitTypeName}}</span>
+                      <i class="far fa-times" @click="removeUnitTypeFromFilter(unitType, $event)"></i>
+                    </span>
+                  </li>
+                </ul>
+                <input type="text" placeholder="Click here to new unitType..." @click="showUnitTypeFnc()" v-model.trim="filterSearchUnitTypeText">
+              </div>
+  
+              <div class="form-control searchResultsAmenities" @click="$event.stopPropagation()" id="UnitTypeDropDown" v-show=" showunitTypeList || selectedFilterColumn == 'UnitType'">
+                <ul>
+                  <li v-for="unitType in unitTypeList" v-bind:value="unitType" @click="addUnitTypeToFilter(unitType)">{{unitType.UnitTypeName}} ({{unitType.propertyNickName}})</li>
+                </ul>
+              </div>
+            </div>
+        </div>
+
+        <div class="col-md-12 mb-3">
+          <div class="form-group pos-relative">
+            <label>Unit Names</label>
+            <div class="col-md-12 searchResultsAmenitiesDiv" @click="showFilterByType('unitName')">
+              <ul class="todo-list">
+                <li v-for="unit in filterObj.Units">
+                  <span class="tags">
+                    <!-- <span>{{unit.UnitName}}</span> -->
+                    <span class="SelMesUnitName">
+                      <div class="textOverflowTag">
+                        <!-- <p>{{unit.UnitName}}</p> -->
+                        <p>{{unit.unitFullName}}</p> 
+                        <!-- <p v-html="'('+unit.UnitName.replace('(','_').split('_')[1]"></p> -->
+                        <p>({{unit.propertyNickName}} - {{unit.NickName}})</p>
+                      </div>
+                    </span>
+                    <i class="far fa-times" @click="removeUnitFromFilter(unit, $event)"></i>
+                  </span>
+                </li>
+              </ul>
+              <input type="text" placeholder="Click here to new unit..." @click="showunitNameFnc()" v-model.trim="filterSearchUnitNameText">
+            </div>
+
+            <div class="form-control searchResultsAmenities" @click="$event.stopPropagation()" id="unitNameDropDown" v-show=" showunitNameList || selectedFilterColumn == 'unitName'">
+              <ul>
+                <li v-for="unit in unitList" v-bind:value="unit" @click="addUnitToFilter(unit)">{{unit.UnitName}}</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div class="sideBarHeading d-flex justify-content-between" style="border-top: #eee solid 1px;">
+          <h6>Reservation Filters</h6>
+          <div class="addMoreBtn dropdown" style="margin-top: 15px;">
+            <button class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown" @click="">
+              <i class="fa fa-plus"></i>
+              <span>Add more criteria</span>
+            </button>
+            <ul class="dropdown-menu resListSortMenu">
+              <li v-for="column in filterColumnList" @click="addColumnToFilters(column)">
+                <span v-text="column.Label"></span>
+              </li>
+            </ul>
+          </div>
+        </div>
+        <!-- toggle -->
+        <div class=" pull-left noClear ml-3 mt-3">  
+          <label class="slideCheck">
+            <input type="checkbox" v-model="filterObj.showUnAllocatedReservations" />
+            <span>Show Only Unallocated Reservations</span>
+          </label>
+          <label style="float:left; margin: 4px 12px 0 10px; font-size: 12px; color: #868686;">Show Only Unallocated Reservations
+               </label>
+        </div>
+
+        <div class=" pull-left noClear ml-3">    
+          <label class="slideCheck">
+            <input type="checkbox" v-model="filterObj.includeObsoleteInventory" />
+            <span>Include Obsolete Inventory</span>
+          </label>
+          <label style="float:left; margin: 4px 12px 0 10px; font-size: 12px; color: #868686;">Include Obsolete Inventory</label>
+        </div>
+
+        <div class="col-md-12">
+          <div class="form-group pos-relative">
+            <label>Sources</label>
+            <div class="col-md-12 searchResultsAmenitiesDiv" @click="showFilterByType('source')">
+              <ul class="todo-list">
+                <li v-for="source in filterObj.Sources">
+                  <span class="tags">
+                    <span>{{source.sourceName}}</span>
+                    <i class="far fa-times" @click="removeSourceFromFilter(source, $event)"></i>
+                  </span>
+                </li>
+              </ul>
+              <input type="text" placeholder="Click here to new source..." @click="showsourceFnc()" v-model.trim="filterSearchSourceTypeText">
+            </div>
+
+            <div class="form-control searchResultsAmenities" @click="$event.stopPropagation()" id="sourceDropDown" v-show=" showsourceList || selectedFilterColumn == 'source'">
+              <ul>
+                <li v-for="source in sourceList" v-bind:value="source" @click="addSourceToFilter(source)">{{source.sourceName}}</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-12">
+          <div class="form-group pos-relative">
+            <label>Status</label>
+            <div class="col-md-12 searchResultsAmenitiesDiv" @click="showFilterByType('status')">
+              <ul class="todo-list">
+                <li v-for="status in filterObj.StatusList">
+                  <span class="tags">
+                    <span>{{status.StatusName}}</span>
+                    <i class="far fa-times" @click="removeStatusFromFilter(status, $event)"></i>
+                  </span>
+                </li>
+              </ul>
+              <input type="text" placeholder="Click here to new status..." @click="showstatusFnc()" v-model.trim="filterSearchStatusText">
+            </div>
+
+            <div class="form-control searchResultsAmenities" @click="$event.stopPropagation()" id="statusDropDown" v-show=" showstatusList || selectedFilterColumn == 'status'">
+              <ul>
+                <li v-for="status in statusList" v-bind:value="status" @click="addStatusToFilter(status)">{{status.StatusName}}</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-12">
+          <div class="form-group pos-relative">
+            <label>Tags</label>
+            <div class="col-md-12 searchResultsAmenitiesDiv" @click="showFilterByType('tag')">
+              <ul class="todo-list">
+                <li v-for="tag in filterObj.TagsList">
+                  <span class="tags resTags">
+                    <span>{{tag.TagName}}</span>
+                    <i class="far fa-times" @click="removeTagFromFilter(tag, $event)"></i>
+                  </span>
+                </li>
+              </ul>
+              <input type="text" placeholder="Click here to new tag..." @click="showtagFnc()" v-model.trim="filterSearchTagText">
+            </div>
+
+            <div class="form-control searchResultsAmenities" @click="$event.stopPropagation()" id="tagDropDown" v-show=" showtagList || selectedFilterColumn == 'tag'">
+              <ul>
+                <li v-for="tag in tagsList" v-bind:value="tag" @click="addTagToFilter(tag)">{{tag.TagName}}</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- <div class="col-md-12">
+          <div class="form-group">
+            <label>Stay Date(s)</label>
+            <div class="row filterDates">
+              <div class="col-md-6">
+                <label>From:</label>
+                <div class="form-group leftPicker">
+                  <datePickerComponent :keyString="'fromDate'" v-model="filterObj.stayStartDate" 
+                      :maximumDate="filterObj.stayEndDate" :value="filterObj.stayStartDate"
+                      :format="'Do MMM YYYY'" :objectPassedToParent="filterObj" 
+                      :onUpdate="updateFilterStayStartDate" :pickerType="'date'">
+                  </datePickerComponent>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <label>To:</label>
+                <div class="form-group">
+                  <datePickerComponent :keyString="'toDate'" v-model="filterObj.stayEndDate" 
+                      :minimumDate="filterObj.stayStartDate" :value="filterObj.stayEndDate"
+                      :format="'Do MMM YYYY'" :objectPassedToParent="filterObj" 
+                      :onUpdate="updateFilterStayEndDate" :pickerType="'date'">
+                  </datePickerComponent>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div> -->
+
+        <div class="col-md-12">
+          <div class="form-group pos-relative">
+            <label>Stay Date(s)</label>
+            <div class="customDateRangePicker">
+                <date-range-picker
+                    ref="picker"
+                    :opens="'center'"
+                    :minDate="minDate"
+                    :maxDate="maxDate"
+                    :autoApply="true"
+                    v-model="stayDateRange"
+                    @update="updateStayDateValues"
+                    :linkedCalendars="linkedCalendars"
+                    :dateFormat="dateFormat"
+                    :ranges="false"
+                    :singleDatePicker="false">
+                    <template v-slot:input="picker">
+                        <span v-if="filterObj.stayStartDate">{{ filterObj.stayStartDate }}</span>
+                        <span v-else>From:</span>  
+                        <span> - </span>
+                        <span v-if="filterObj.stayEndDate">{{ filterObj.stayEndDate }}</span>
+                        <span v-else>To:</span> 
+                        <span class="input-group-addon btn btn-primary" style="position: relative; top: -6px; right: -11px;">
+                            <i class="fas fa-calendar-alt"></i>
+                        </span> 
+                        <!-- {{ filterObj.stayStartDate }} - {{ filterObj.stayEndDate }} -->
+                    </template>
+                </date-range-picker>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-12" v-for="filterCol in filterObj.Columns">
+          <div class="form-group" v-if="filterCol.type== 'text'">
+            <label>{{filterCol.label}}</label>
+            <div class="col-md-12 searchResultsAmenitiesDiv">
+              <ul class="todo-list">
+                <li v-for="selectedText in filterCol.arrText">
+                  <span class="tags">
+                    <span>{{selectedText}}</span>
+                    <i class="far fa-times" @click="removeSearchTextFromColumn(selectedText, filterCol)"></i>
+                  </span>
+                </li>
+              </ul>
+              <input type="text" v-model.trim="filterCol.value" :placeholder="filterCol.label" v-on:keyup="addSearcTextToColumn(filterCol, $event)">
+            </div>
+          </div>
+
+          <!-- <div class="form-group" v-if="filterCol.type == 'date'">
+            <label>{{filterCol.label}}</label>
+            <div class="row filterDates">
+              <div class="col-md-6">
+                <label v-if="filterCol.colunmName == 'CheckinCheckoutDate'">Check-In Date</label>
+                <label v-else>From:</label>
+                <div class="form-group leftPicker">
+                  <datePickerComponent :keyString="'fromDate'" v-model="filterCol.value" :maximumDate="filterCol.rangeVal" :value="filterCol.value"
+                    :format="'Do MMM YYYY'" :objectPassedToParent="filterCol" :onUpdate="updateFilterStartDate" :pickerType="'date'"></datePickerComponent>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <label v-if="filterCol.colunmName == 'CheckinCheckoutDate'">Check-Out Date</label>
+                <label v-else>To:</label>
+                <div class="form-group">
+                  <datePickerComponent :keyString="'toDate'" v-model="filterCol.rangeVal" :minimumDate="filterCol.value" :value="filterCol.rangeVal"
+                    :format="'Do MMM YYYY'" :objectPassedToParent="filterCol" :onUpdate="updateFilterEndDate" :pickerType="'date'"></datePickerComponent>
+                </div>
+              </div>
+            </div>
+          </div> -->
+
+          <div v-if="filterCol.type == 'date'">
+            <div class="form-group pos-relative">
+                <label>{{filterCol.label}}</label>
+                <div class="customDateRangePicker">
+                    <date-range-picker
+                    ref="picker"
+                    :opens="'center'"
+                    :minDate="minDate"
+                    :maxDate="maxDate"
+                    :autoApply="true"
+                    v-model="filterColumnsDateRange"
+                    @update="updateFilterValues(filterCol)"
+                    :linkedCalendars="linkedCalendars"
+                    :dateFormat="dateFormat"
+                    :ranges="false"
+                    :singleDatePicker="false"
+                    >
+
+                    <template v-slot:input="picker">
+                        <span v-if="filterCol.value">{{ filterCol.value }}</span>
+                        <span v-else>From:</span>  
+                        <span> - </span>
+                        <span v-if="filterCol.rangeVal">{{ filterCol.rangeVal }}</span>
+                        <span v-else>To:</span> 
+                        <span class="input-group-addon btn btn-primary" style="position: relative; top: -6px; right: -11px;">
+                            <i class="fas fa-calendar-alt"></i>
+                        </span> 
+                        <!-- {{ filterColumnsDateRange.startDate }} - {{ filterColumnsDateRange.endDate }} -->
+                    </template>
+                </date-range-picker>
+                </div>
+            </div>
+        </div>
+
+        </div>
+
+          <!-- <div class="col-md-12">
+            <div class="addMoreBtn dropdown">
+              <button class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown" @click="">
+                <i class="fa fa-plus"></i>
+                <span>Add more criteria</span>
+              </button>
+              <ul class="dropdown-menu resListSortMenu">
+                <li v-for="column in filterColumnList" @click="addColumnToFilters(column)">
+                  <span v-text="column.Label"></span>
+                </li>
+              </ul>
+            </div>
+          </div> -->
+
+      </div>
+    </div>
+    <div class="col-md-12 pb-1" style="border-top: 1px solid #f7f7f7;flex-direction: row-reverse;display: flex;justify-content: space-between;">
+      <button class="btn btn-primary btn-sm mr-0" @click="applyFilter()" :disabled="fncIsReservationSelect && (fncIsReservationSelect.isAssigned === -1 && fncIsReservationSelect.functionState === 2)"
+        v-if="fncIsReservationSelect && (fncIsReservationSelect.isAssigned === 1 || (fncIsReservationSelect.isAssigned === -1 && fncIsReservationSelect.functionState === 2))">
+        Apply Filter
+
+      </button>
+      <button class="btn btn-danger btn-sm " @click="clearAllFilters">Clear Filters</button>
+      <button class="btn btn-danger btn-sm btn-blank-danger" @click="closeFilter()">
+        Close Panel
+      </button>
+
+    </div>
+  </div>
+</div>

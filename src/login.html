@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Host Tempo</title>
+  <link rel="stylesheet" href="src/assets/css/login.css">
+  <link href='https://fonts.googleapis.com/css?family=Roboto' rel='stylesheet'>
+  <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script> -->
+
+  <!-- <script src="src/assets/scripts/jquery-2.1.4.min.js"></script> -->
+   <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <!-- <script src="src/assets/scripts/knockout-3.4.0.js"></script> -->
+   
+  <script src="src/assets/scripts/knockout.validations.js"></script>
+  <script src="src/assets/scripts/tripledes.js"></script>
+</head>
+
+<body>
+  <div class="overlay-color">
+    <div class="loginBoxDiv">
+      <h1>Host
+        <span>Tempo</span>
+      </h1>
+
+
+      <form style="margin-bottom: 0">
+        <h4>LOGIN</h4>
+        <input type="text" placeholder="Client ID" data-bind="value: loginClientCode, visible: clientCodeVisibility, valueUpdate: 'afterkeydown',event: { keypress: LoginOnEnter }"
+        />
+      </form>
+      <form style="margin-top: 0">
+        <input type="text" placeholder="User Name" data-bind="value: loginUsername, valueUpdate: 'afterkeydown',event: { keypress: LoginOnEnter }"
+        />
+        <input type="password" placeholder="Password" data-bind="value: loginPassword, valueUpdate: 'afterkeydown',event: { keypress: LoginOnEnter }"
+        />
+        <input type="button" value="Sign In" data-bind="click: Login" />
+        <div data-bind="text: errLoginMsg" class="invalidClient"></div>
+      </form>
+    </div>
+  </div>
+
+  <script type="text/javascript">
+
+    let apiPort = "1339";
+    let clientCode;
+    let apiUrl = window.location.protocol + '//' + window.location.hostname + ':' + (window.location.port ? window.location.port : "");
+    console.log("apiUrl",apiUrl)
+    let appUrl = window.location.protocol + '//' + window.location.hostname;
+    console.log("appUrl",appUrl)
+
+    let arrAppUrl = window.location.hostname.split('.');
+    console.log("arrAppUrl",arrAppUrl)
+    console.log("arrAppUrl.len",arrAppUrl.length)
+
+    if (arrAppUrl.length > 2 && arrAppUrl.length < 4) {
+      apiUrl = window.location.protocol + '//' + arrAppUrl[0] + "." + arrAppUrl[1] + "." + arrAppUrl[2] + ':' + (window.location.port ? window.location.port : "");
+      clientCode = arrAppUrl[0];
+      appUrl = window.location.protocol + '//' + arrAppUrl[0] + "." + arrAppUrl[1] + "." + arrAppUrl[2];
+    }
+    else if (arrAppUrl.length > 2 && arrAppUrl.length === 4) {
+      apiUrl = window.location.protocol + '//' + window.location.hostname + ':' + apiPort;
+      appUrl = window.location.protocol + '//' + arrAppUrl[0];
+    }
+    else if (arrAppUrl.length === 2) {
+      if (arrAppUrl[1] == "localhost") {
+        apiUrl = window.location.protocol + '//' + arrAppUrl[1] + ':' + (window.location.port ? window.location.port : "");
+        //apiUrl = window.location.protocol + '//'+ arrAppUrl[0] + "." + arrAppUrl[1] + ':' + "1339";
+        clientCode = arrAppUrl[0];
+        appUrl = window.location.protocol + '//' + arrAppUrl[1] + ":3001";
+      }
+      else {
+        apiUrl = window.location.protocol + '//' + arrAppUrl[0] + "." + arrAppUrl[1] + "." + arrAppUrl[2] + (window.location.port ? ':' + window.location.port : "");
+        appUrl = window.location.protocol + '//' + arrAppUrl[0] + "." + arrAppUrl[1] + "." + arrAppUrl[2];
+      }
+    }
+    else if (arrAppUrl.length === 1) {
+      console.log("yesssssss")
+      apiUrl = window.location.protocol + '//' + window.location.hostname + ':' + apiPort;// + arrAppUrl[0] + ':' + (window.location.port ? window.location.port : apiPort);
+      appUrl = window.location.protocol + '//' + arrAppUrl[0];
+    }
+
+    function GetQueryStringParams(sParam) {
+      let sPageURL = window.location.search.substring(1);
+      let sURLVariables = sPageURL.split('&');
+      for (let i = 0; i < sURLVariables.length; i++) {
+        let sParameterName = sURLVariables[i].split('=');
+        if (sParameterName[0].toLowerCase() === sParam.toLowerCase()) {
+          return sParameterName[1];
+        }
+      }
+    }
+
+    function CreateSalt() {
+      let newSalt = "";
+
+      do {
+        newSalt = Math.floor(Math.random() * Math.pow(10, 15)).toString();
+      } while (newSalt.length < 10);
+      return newSalt;
+    }
+
+    function Encrypt(msg) {
+      let salt = CreateSalt();
+
+      let encrypted = CryptoJS.TripleDES.encrypt(msg, salt);
+      let encryptedText = encrypted.toString();
+      //decrypt
+      let decrypted = CryptoJS.TripleDES.decrypt(encryptedText, salt);
+      let plaintext = decrypted.toString(CryptoJS.enc.Utf8);
+      let obj = {
+        encryptedText: msg,
+        salt: salt
+      };
+      return obj;
+    }
+
+    let viewModel = function () {
+      let self = this;
+
+      let APIRootUrl = '/';
+      self.showLoading = ko.observable(false);
+
+      self.errLoginMsg = ko.observable('');
+      self.clientCodeVisibility = ko.observable(false);
+
+      self.showMessage = function (errMsg, success) {
+        if (errMsg) {
+          self.activateMsg(errMsg);
+          self.activateMsgCss('alert alert-danger');
+        }
+        else {
+          self.activateMsg(success);
+          self.activateMsgCss('alert alert-success');
+        }
+      };
+      // appUrl
+      //login fields start
+      self.loginClientCode = ko.observable('');
+      self.loginUsername = ko.observable('');
+      self.loginPassword = ko.observable('');
+
+      self.loginClientCode.extend({
+        required: { message: 'Client code is required' }
+      });
+      self.loginUsername.extend({
+        required: { message: 'User Name is required', params: true }
+      });
+      self.loginPassword.extend({
+        required: { message: 'Password is required', params: true }
+      });
+
+      self.loginerrors = ko.validation.group([self.loginClientCode, self.loginUsername, self.loginPassword]);
+      self.LoginOnEnter = function (data, event) {
+        console.log("data in LoginOnEnter 153", data)
+        var keyCode = (event.which ? event.which : event.keyCode);
+        if (keyCode === 13) {
+          this.Login();
+          return false;
+        }
+        return true;
+      }
+      self.Login = function () {
+
+        if (self.loginerrors().length === 0) {
+
+        }
+        else {
+          self.loginerrors.showAllMessages();
+          return;
+        }
+        // appUrl
+        self.errLoginMsg('');
+        let encryptloginPassword = Encrypt(self.loginPassword());
+        self.showLoading(true);
+
+        //ajax call
+        let loginParams = {
+          requestParams: {
+            'APIReg': "10003",
+            'UserName': self.loginUsername(),
+            'ClientCode': self.loginClientCode(),
+            'Password': self.loginPassword(),//encryptloginPassword.encryptedText,
+            'FunctionId': 'fncLogin'
+          },
+          systemParams: {
+            'Source': 'Web',
+            'SourceId': window.location.hostname
+          }
+        };
+        $.ajax({
+          dataType: "json",
+          type: 'POST',
+          //crossDomain: true,
+          contentType: "application/json;charset=utf-8",
+          url: apiUrl + '/api', 		// Location of the service
+          data: JSON.stringify(loginParams),
+          success: function (response) {
+            window.localStorage.removeItem('rttoken');
+            window.localStorage.removeItem('CName');
+            self.showLoading(false);
+            console.log("babee",response);
+            if (response) {
+              if (!response.response.error) {
+                console.log("response for login", response.response.length);
+                if (response.response.length > 0 && response.response[0] && response.response[0].hasOwnProperty("userID")) {
+                  console.log("first")
+                  window.localStorage.setItem('rttoken', response.response[0]["token"]);
+                  window.localStorage.setItem('CName', response.response[0]["clientName"]);
+
+                  window.location.href = "/index.html";
+                }
+                else {
+                  if (response.response.errno) {
+                    console.log("sec")
+                    self.errLoginMsg("Server Error: " + response.response.errno);
+                  }
+                  else
+                  console.log("inv")
+                    self.errLoginMsg("Invalid credentials");
+                }
+              }
+              else {
+                console.log("err")
+                self.errLoginMsg(response.response.ErrorMessage);
+              }
+              // if (response && response.landingPage) {
+              //     window.localStorage.setItem('user', response["userId"]);
+              //     window.location.href = "/indexdev.html#" + response["landingPage"];
+              // }
+              // else {
+              //     self.errLoginMsg("Invalid credentials");
+              // }
+
+            }
+          },
+          error: function (d) {
+            window.localStorage.removeItem('vwtoken');
+            self.showLoading(false);
+            console.log(d.responseJSON);
+            self.errRegisterMsg(d.responseJSON.ErrorMessage.message);
+          },
+        });
+      };
+
+      self.IsValidCss = function (field) {
+        if (!field.isValid() && field.isModified())
+          return 'has-error';
+        return '';
+      };
+
+      $(document).ready(function () {
+        console.log("document ready function inside viewmodel");
+        if (GetQueryStringParams('SessionExpired')) {
+          self.showMessage('Session Expired. Please Login', undefined);
+
+          return;
+        }
+        let userActiavted = GetQueryStringParams('Activate');
+        if (userActiavted) {
+          if (userActiavted > 0)
+            self.showMessage(undefined, 'success activated');
+          else
+            self.showMessage('Activation failed', undefined);
+
+        }
+        else {
+
+        }
+        let signup = GetQueryStringParams('signup');
+        if (signup != undefined) {
+          self.showLogin(false);
+        }
+        let email = GetQueryStringParams('email');
+        if (email != undefined) {
+          self.email(email);
+        }
+        let errorCode = GetQueryStringParams('ErrorCode');
+        if (errorCode !== undefined) {
+          if (errorCode === '-100') {
+            self.showMessage('An internal error has occured', undefined);
+          }
+          else if (errorCode === '-101') {
+            self.showMessage('Forms not configured. Please contact Cura Support', undefined);
+          }
+        }
+        // alert(Cookies.get('ProviderName'));
+        if (window.location != null && window.location.href != null && window.location.href.indexOf('?code=') !== -1 && Cookies.get('ProviderName')
+          != null)//&& Cookies.get('ProviderName')!=undefined)
+        {
+          //self.SocialLoginResponse();
+          //Cookies.remove('ProviderName');
+        }
+
+        window.localStorage.removeItem('rttoken');
+
+        //Checking whether the client code mentioned in URL is valid or not
+        if (clientCode && ['app', 'qa', 'dev', 'demo', 'dev2', 'devsys1', 'devsys2', 'devsys3', 'devsys4', 'devsys5', 'devsys6', 'devsys7', 'devsys8'].indexOf(clientCode) === -1 && !GetQueryStringParams('clienterror')) {
+          self.loginClientCode(clientCode);
+
+          let loginParams = {
+            requestParams: {
+              'APIReg': "10001",
+              'ModuleAction': "GetClientProfile",
+              'ClientCode': self.loginClientCode()
+            },
+            systemParams: {
+              'Source': 'Web',
+              'SourceId': window.location.hostname
+            }
+          };
+          $.ajax({
+            dataType: "json",
+            type: 'POST',
+            //crossDomain: true,
+            contentType: "application/json;charset=utf-8",
+            url: apiUrl + '/api', 		// Location of the service
+            data: JSON.stringify(loginParams),
+            success: function (response) {
+              window.localStorage.removeItem('rttoken');
+              self.showLoading(false);
+              console.log(response);
+              if (response.hasOwnProperty("recordsets")
+                && Array.isArray(response.recordsets)
+                && response.recordsets.length > 0
+                && Array.isArray(response.recordsets[0])
+                && response.recordsets[0].length > 0) {
+                if (response.recordsets[0][0]["ErrorMessage"] !== "") {
+                  self.errLoginMsg(response.recordsets[0][0]["ErrorMessage"]);
+                  self.clientCodeVisibility(false);
+                  self.loginClientCode("");
+                  window.location.href = window.location.protocol + '//app.hosttempo.com/login.html?clienterror=invalidClient';
+                  //window.location.href = window.location.protocol + '//localhost:8080/login.html?clienterror=invalidClient';
+                } else {
+
+                }
+
+              }
+              else {
+                self.errLoginMsg(response.ErrorMessage);
+              }
+            },
+            error: function (d) {
+              window.localStorage.removeItem('vwtoken');
+              self.showLoading(false);
+              console.log(d.responseJSON);
+              self.errRegisterMsg(d.responseJSON.ErrorMessage.message);
+            }
+          });
+        } else {
+          self.clientCodeVisibility(true);
+          console.log("Invalid Url or its not a sub domain");
+        }
+
+      });
+    }
+      ;
+    ko.applyBindings(viewModel);
+
+    $(document).ready(function () {
+      if (GetQueryStringParams('clienterror')) {
+        self.errLoginMsg('Invalid client. Please login from here', undefined);
+        return;
+      }
+
+      if (GetQueryStringParams('SessionExpired')) {
+        self.showMessage('Session Expired. Please Login', undefined);
+        return;
+      }
+      let userActivated = GetQueryStringParams('Activate');
+      if (userActivated) {
+        if (userActivated > 0) {
+          self.showMessage(undefined, 'success activated');
+        } else {
+          self.showMessage('Activation failed', undefined);
+        }
+
+      } else {
+
+      }
+      let signup = GetQueryStringParams('signup');
+      if (signup !== undefined) {
+        self.showLogin(false);
+      }
+      let email = GetQueryStringParams('email');
+      if (email !== undefined) {
+        self.email(email);
+      }
+      let errorCode = GetQueryStringParams('ErrorCode');
+      if (errorCode !== undefined) {
+        if (errorCode === '-100') {
+          self.showMessage('An internal error has occured', undefined);
+        } else if (errorCode === '-101') {
+          self.showMessage('Forms not configured. Please contact Cura Support', undefined);
+        }
+      }
+
+    });
+  </script>
+</body>
+
+</html>

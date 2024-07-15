@@ -1,0 +1,1566 @@
+<div class="panel-body fullStretch">
+    <pageLoadingComponent v-show="loading"></pageLoadingComponent>
+    <div v-show="!loading" class="row flexStart">
+      <div class="col-md-7 infoContainer">
+        <section :class="{bgColor:isBgColor1}" v-on:click="displaySection('guestinfo')" >             
+            <div class="row">                   
+              <div class="col-md-6 pt-0">
+                <div class="form-group">
+                  <div>
+                    <h6 class="pull-left guestName" style="margin-bottom: 3px;"><span>{{guestInfo.GuestFirstName}}</span> <span>{{guestInfo.GuestLastName}}</span>
+                      <div style="display: inline;">
+                        <!-- <button class="btn btn-blank gp-icon active" v-if="guestInfo.AccountType == 3"><i class="fas fa-comments-alt"></i></button> -->
+                        <button class="btn btn-blank gp-icon active" v-if="guestInfo.AccountType == 7"><i class="fas fa-building"></i></button>
+                        <button class="btn btn-blank gp-icon active" v-if="guestInfo.AccountType == 3"><i class="fas fa-user-alt"></i></button>
+                      </div>
+                    </h6>
+                    <!-- <span class="countryNames"> -->
+                      <!-- <span v-if="guestInfo.CityName">{{guestInfo.CityName}}{{guestInfo.CityName && guestInfo.StateName ? ', ' : ''}}</span><span>{{guestInfo.StateName}}{{guestInfo.StateName && guestInfo.CountryName ? ', ' : ''}}</span> <span>{{guestInfo.CountryName}}</span> -->
+                        <!-- <span v-if="guestInfo.CityName !== undefined && guestInfo.CityName !== null && guestInfo.CityName != ''"
+                          class="countryNames">{{guestInfo.CityName}}{{guestInfo.StateName ? ', ' + guestInfo.StateName: ''}}
+                        </span>
+                        <span v-else class="countryNames">{{guestInfo.CountryName}}</span>
+                        <span v-else></span> -->
+                        <span>
+                          <span class="countryNames">{{displayAddress(guestInfo)}}</span>
+                        </span>
+                      <!-- <span v-if="guestInfo.CountryName && guestInfo.CountryName != ''">
+                        <span v-if="guestInfo.CountryName == 'United States'"><span v-if="guestInfo.CityName">{{guestInfo.CityName}}{{guestInfo.CityName && guestInfo.StateName ? ', ' + guestInfo.StateName : guestInfo.StateName}}</span></span>
+                        <span v-else="">{{guestInfo.CountryName}}</span>
+                    </span>
+                    <span v-else>
+                        <span v-if="guestInfo.CityName">{{guestInfo.CityName}}{{guestInfo.CityName && guestInfo.StateName ? ', ' + guestInfo.StateName : guestInfo.StateName}}</span><span v-else-if="guestInfo.StateName">{{guestInfo.StateName}}</span><span v-else></span>
+                    </span> -->
+                    <!-- </span> -->
+                  </div>
+                  
+                </div>
+              </div>
+              <div class="col-md-6 mb-3 pt-0">
+                <div class="resInfoSectionActions">
+                  <select v-model="guest_Status" class="form-control resDetailStatus"
+                  v-validate="'required'" v-bind:class="guest_Status.StatusName">
+                  <option v-for="status in statusList" v-bind:value="status">{{status.StatusName}}
+                  </option>
+                  </select>
+                </div>
+                <div class="col pl-0 pr-0">
+                  <div class="form-group">
+                    <div class="headRightWrap" style="margin-top: -17px;"><button  class="navFixNewReser" :disabled="guest_Status.StatusId != '1'" @click="createReservationWithThisGuest(guestInfo)" style="padding: 1.5px 15px;position: relative;top: 1px;">New Reservation</button></div>
+                  </div>
+                </div>
+              </div>
+
+
+
+              <div class="col pl-0 customer-since-block">
+
+                <div class="form-group" v-if="guestBookings && guestBookings.BookedOnDate">
+                  <label>Customer Since</label>
+                  <h6>{{formatArrivalDate(guestBookings.BookedOnDate)}}</h6>
+                  <!-- <label>Email</label> -->
+                  <!-- <span class="infoData" v-if="additionalEmails && additionalEmails.length > 0 && additionalEmails[0].Emailaddress">{{additionalEmails[0].Emailaddress}}</span> -->
+                </div>
+
+                <div class="gp-cs-src">
+                  <span class="resDetailSource" v-bind:class="(guestInfo.SubSourceName && guestInfo.SubSourceName != '' && guestInfo.SubSourceName != null) ? guestInfo.SubSourceName : (guestInfo.SourceName && guestInfo.SourceName !='' && guestInfo.SourceName != null) ? guestInfo.SourceName : ''"></span>
+                </div>
+
+              </div>
+            </div>
+            
+          <!-- <div class="row">    
+            <div class="col-md-6">
+                <div class="form-group">
+                  <label>Phone</label>
+                  <span class="infoData" v-if="additionalPhoneNumbers && additionalPhoneNumbers.length > 0 && additionalPhoneNumbers[0].PhoneNumber">{{additionalPhoneNumbers[0].PhoneNumber}}</span>
+                </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-group">
+                <label>City</label>
+                <span class="infoData" >{{guestInfo.CityName}}</span>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-group">
+                <label>State</label>
+                <span class="infoData" >{{guestInfo.StateName}}</span>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-group">
+                <label>Country</label>
+                <span class="infoData" >{{guestInfo.CountryName}}</span>
+              </div>
+               <div class="col-md-12" v-if="GuestProfileId != -1">
+                  <tagComponent :entityId="GuestProfileId" :entityTypeId="18">
+                  </tagComponent>
+                </div> 
+            </div>
+          </div> -->
+
+
+          <div class="row">
+            <div class="col-md-12 gp-tags nocursor" v-if="GuestProfileId != '-1' && GuestProfileId != undefined && GuestProfileId != null">
+              <tagComponent :isDisabled="Tagdisable" :entityId="GuestProfileId" :entityTypeId="18">
+              </tagComponent>
+            </div>
+          </div>
+        </section>  
+
+        <section class="cursor-def" :class="{bgColor:isBgColor2}">
+
+          <div  class="row gp-report-cards" >
+              <div class="gp-card-item" :class="isBgColor2 == true ? 'active' : ''"  v-on:click="displaySection('priorStayInfo')">
+                
+                <div @click="displaySection('priorStayInfo')" class="gp-card-grid">
+                  <div class="gp-report-icon occupancy"></div> 
+                  <div class="gp-report-data">
+                    <div class="gp-report-title" >Reservations</div>
+                    <div>
+                      <span v-if="guestBookings.Stays">{{guestBookings.Stays}}</span>
+                      <span v-else>0</span>
+                      <span>{{guestBookings.Stays && guestBookings.Stays == 1 ? 'Booking' : 'Bookings'}}</span>
+                    </div>
+                    <div v-if="guestBookings.Nights">{{guestBookings.Nights}} Nights</div> 
+                    <div v-else>0 Nights</div> 
+                  </div>
+                </div>
+              </div>
+
+
+              <div class="gp-card-item">
+                
+                <div class="gp-card-grid">
+                  <div class="gp-report-icon revenue"></div> 
+                  <div class="gp-report-data">
+                    <div class="gp-report-title">Revenue</div>
+                    <div>
+                      <p style="display: inline-block; font-size: 18px;margin: 0; color:#484848;font-weight: 500;">$</p>
+                      <span style="font-size: 23px;">{{formatRMoney(guestBookings.Revenue)}} </span>
+                    </div>
+                    <div v-if="guestBookings.ADR">$ {{guestBookings.ADR}} ADR</div> 
+                    <div v-else >$ 0 ADR</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="gp-card-item">
+                
+                <div class="gp-card-grid">
+                  <div class="gp-report-icon last-stay-nights"></div> 
+                  <div class="gp-report-data">
+                    <div class="gp-report-title">Last Stay</div>
+                    <div>
+                      <span v-if="guestBookings.LastArrivalDate">{{formatArrivalOnDate(guestBookings.LastArrivalDate)}}</span>
+                     
+                    </div>
+                    <div v-if="guestBookings.LastArrivalDate">{{formatYear(guestBookings.LastArrivalDate)}}</div> 
+
+                  </div>
+                </div>
+              </div>
+
+              <div class="gp-card-item">
+                
+                <div class="gp-card-grid">
+                  <div class="gp-report-icon stay-nights"></div> 
+                  <div class="gp-report-data">
+                    <div class="gp-report-title">Next Stay</div>
+                    <div>
+                      <span v-if="guestBookings.NextArrivalDate">{{formatArrivalOnDate(guestBookings.NextArrivalDate)}}</span>
+                     
+                    </div>
+                    <div v-if="guestBookings.NextArrivalDate">{{formatYear(guestBookings.NextArrivalDate)}}</div> 
+
+                  </div>
+                </div>
+              </div>
+
+          </div>
+
+        </section>
+
+
+        <section class="split">
+
+          <div class="row">
+            <!-- <div class="col-md-6 splitLeft" @click="displaySection('priorStayInfo')" :class="{bgColor:isBgColor2}">
+              <div class="infoContainerHeading">
+                <span class="editPencil">
+                  <i class="fa fa-pencil" aria-hidden="true"></i>
+                </span>
+              </div>
+              <div class="gp-sub-source-items">
+                <div class="col-md-11 pl-0">
+                  <div class="form-group">
+                  <label>Source name</label> 
+                  <span class="resDetailSource" v-bind:class="(guestInfo.SubSourceName && guestInfo.SubSourceName != '' && guestInfo.SubSourceName != null) ? guestInfo.SubSourceName : (guestInfo.SourceName && guestInfo.SourceName !='' && guestInfo.SourceName != null) ? guestInfo.SourceName : ''"></span>
+                  </div>
+                </div>
+                <div class="col-md-11 pl-0">
+                  <div class="form-group">
+                  <label>No.of bookings</label> 
+                  <span class="infoData" v-if="guestPriorStays && guestPriorStays.length > 0">{{guestPriorStays.length}} Booking(s)</span>
+                  </div>
+                </div>
+              </div>
+            </div> -->
+
+
+            <div class="col-md-6 splitRight" v-if="guestInfo.AccountType == 7" :class="{bgColor:isBgColor4}" @click="displaySection('corporateLedgerInfo')">
+              <!-- v-on:click="displaySection('corporateLedgerInfo')"  -->
+              <!-- <div class="infoContainerHeading">
+                <span class="editPencil">
+                  <i class="fa fa-pencil" aria-hidden="true"></i>
+                </span>
+              </div> -->
+              <!-- <ul class="payDetail"  v-if="guestPaymentCards.length > 0">
+                 
+                <li v-if="defaultPaymentCard">
+                  <span class="ch-name">{{defaultPaymentCard.NameOnCard}}</span>
+                  <br>
+                  <span v-if=" defaultPaymentCard.CCLast4Digits && defaultPaymentCard.CCLast4Digits !== null"> **** ****
+                    **** {{defaultPaymentCard.CCLast4Digits}}</span>
+                
+  
+                  <br> {{defaultPaymentCard.Expirationdate}}
+                  <span :class="['cardType', defaultPaymentCard.CardType]"></span>
+                </li>
+              </ul> -->
+              <!-- <div class="form-group pull-right" style="clear:right" v-if="guestPaymentCards.length > 1">
+                <span class="moreLink" @click="showAllPaymentOptions">{{guestPaymentCards.length-1 + ' More Option..'}}
+                </span>
+              </div> -->
+              <div class="infoContainerHeading">
+                <span class="editPencil">
+                  <i class="fa fa-pencil" aria-hidden="true"></i>
+                </span>
+              </div>
+              <span style="color: #373737;font-size: 16px;font-weight: 600;position: relative; top: -15px;">Financial Summary</span> 
+              <ul class="folioSummary financialSummary" v-for="folio in corporateSummaryDetails[0]"> 
+                <!-- <li v-show="showLess" v-for="folio in ShowLessfolioItemsDetails">
+                 
+                  <span v-if="folio.ItemQty"
+                    v-text="folio.FolioItemName + ' ' + 'X' + ' ' + folio.ItemQty + ' ' + (folio.ItemQty > 1 ? 'Nights' : 'Night')"></span>
+                  <span v-else v-text="folio.FolioItemName"></span>
+                  <span class="folioAdr" v-if="folio.ItemQty && folio.Adr"
+                    v-text="'( $ ' + folio.Adr + ' per night )'"></span>
+                  <span v-if="folio.Charges && folio.Charges !== null" v-text="formatMoney(folio.Charges)"></span>
+                </li>
+                <li v-show="showMore" v-for="folio in folioSummaryDetail">
+                  <span v-if="folio.FolioItemName && folio.ItemQty && folio.ItemQty > 1"
+                    v-text="folio.FolioItemName + ' ' + 'X' + ' ' + folio.ItemQty + ' ' + (folio.ItemQty > 1 ? 'Nights' : 'Night')"></span>
+                  <span v-else v-text="folio.FolioItemName"></span>
+                  <span class="folioAdr" v-if="folio.ItemQty && folio.Adr"
+                    v-text="'( $ ' + folio.Adr + ' / night )'"></span>
+                  <span v-if="folio.Charges !== null" v-text="formatMoney(folio.Charges)"></span>
+                </li> -->
+                <li >
+                  <span>{{folio.ItemType}}</span>
+                  <span class="folioAdr">({{folio.Count}})</span>
+                  <span class="pull-right"
+                    v-text="formatMoney(folio.Amount)"></span>
+                </li>
+                <!-- <li>
+                  <span>Pending items from Master​</span>
+                  <span class="pull-right"
+                    v-text="formatMoney(folio.)"></span>
+                </li>     -->
+              </ul>
+
+              <div class="">
+                <div class="col-md-12 totalBorders thinPadding pull-left pb-1" >
+                  <div class="form-group">
+                    <span
+                      class="pull-left totalNumeric">Total</span>
+                    <span class="pull-right totalNumeric"
+                      v-text="formatMoney(financialSummaryData.Total)"></span>
+                  </div>
+                </div>
+    
+                <div class="col-md-12 thinPadding pull-left pt-1 pr-0 pl-0 pb-0" style="margin-bottom: 10px;">
+                  <div class="form-group">
+                    <span
+                      class="pull-left totalNumeric paymentNumeric">Payments</span>
+                    <span
+                      class="pull-right totalNumeric paymentNumeric" v-text="formatMoney(financialSummaryData.Payments)"></span>
+                  </div>
+                </div>
+                
+
+                <div class="col-md-12 thinPadding pull-left pb-0 pt-0">
+                  <div class="form-group" style="border-top: 1px solid #ccc;padding-top: 15px;">
+                  <span class="totalNumeric">Balance</span>
+                  <span class="pull-right" style="font-weight: 600;"                    
+                    v-text="formatMoney(financialSummaryData.Balance)"></span>
+                  </div>
+                </div>
+                <!-- :class="['balanceNumeric ml-3', folioCharges.Balance == folioCharges.TotalValue ? 'balanceEqual' : 'balanceNotEqual', checkBalanceColor(folioCharges.Balance)]" -->
+                <div class="col-md-12 thinPadding pull-right pt-0" v-if="financialSummaryData.NextInvoiceDate">
+                  <div class="row">
+                    <div class="col-md-8 pr-0 pt-1">
+                      <span class="totalNumeric pull-right" style="font-size: 13px !important;font-weight: 500 !important;color: #e84200 !important;">{{checkDateWithCurrent(financialSummaryData.NextInvoiceDate)?'Past': ''}}Due on {{formatUTCDate(financialSummaryData.NextInvoiceDate)}}</span>
+                    </div>
+                    <div class="col-md-4 pl-0 pt-1">
+                      <span class="pull-right" style="font-size: 13px !important;font-weight: 500 !important;color: #e84200;"                    
+                    v-text="formatMoney(financialSummaryData.NextInvoiceAmount)">{{financialSummaryData}}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>              
+               
+              
+              <!-- <div class="form-group pull-right" style="width: 80%;clear:right;">
+                <button class="btn btn-primary btn-sm pull-left">Coporate Ledger Summary</button>
+              </div> -->
+            </div>
+
+
+            <div class="col-md-6 splitRight" v-on:click="displaySection('cardinfo')" :class="{bgColor:isBgColor3}">
+              <div class="infoContainerHeading">
+                <span class="editPencil">
+                  <i class="fa fa-pencil" aria-hidden="true"></i>
+                </span>
+              </div>
+              <ul class="payDetail"  v-if="guestPaymentCards.length > 0">
+                 
+                <li v-if="defaultPaymentCard">
+                  <span class="ch-name">{{defaultPaymentCard.NameOnCard}}</span>
+                  <br>
+                  <span v-if=" defaultPaymentCard.CCLast4Digits && defaultPaymentCard.CCLast4Digits !== null"> **** ****
+                    **** {{defaultPaymentCard.CCLast4Digits}}</span>
+                
+  
+                  <br> {{defaultPaymentCard.Expirationdate}}
+                  <span :class="['cardType', defaultPaymentCard.CardType]"></span>
+                </li>
+              </ul>
+              <div class="form-group pull-right" style="clear:right" v-if="guestPaymentCards.length > 1">
+                <span class="moreLink" @click="showAllPaymentOptions">{{guestPaymentCards.length-1 + ' More Option..'}}
+                </span>
+              </div>
+
+              <div class="form-group pull-right" style="width: 80%;clear:right">
+                <button class="btn btn-primary btn-sm pull-left" @click="addPaymentDetails(false)"><i class="far fa-plus"></i> Add Payment Options</button>
+              </div>
+            </div>
+          </div>
+
+
+          <div>
+
+
+          </div>
+        </section> 
+
+
+        <!-- <section :disabled="fncIsNotesView && (fncIsNotesView.isAssigned === -1 && fncIsNotesView.functionState === 2)"
+          v-if="fncIsNotesView && (fncIsNotesView.isAssigned === 1 || (fncIsNotesView.isAssigned === -1 && fncIsNotesView.functionState === 2)) "
+          v-on:click="displaySection('reservation4')" :class="{bgColor:isBgColor4}">
+          <div class="blankButton" v-show="showNotesDetailButton" v-on:click="displaySection('reservation4')">
+            <button type="button" class="btn btn-link">Notes</button>
+          </div>
+          <div class="row" v-if="displayNotesDetail === 'NotesDetail'">
+            <div class="infoContainerHeading">
+              <button type="button"
+                :disabled="fncIsNotesNew && (fncIsNotesNew.isAssigned === -1 && fncIsNotesNew.functionState === 2)"
+                v-if="fncIsNotesNew && (fncIsNotesNew.isAssigned === 1 || (fncIsNotesNew.isAssigned === -1 && fncIsNotesNew.functionState === 2)) "
+                class="btn btn-primary btn-sm pull-right mb-3 mr-0" v-on:click="addNewNotes('reservation4')">Add</button>
+  
+            </div>
+            <div class="col-md-12">
+              <table class="table table-bordered userTable">
+                <thead>
+                  <tr>
+                    <th>NOTES</th>
+                    <th>SUBJECT</th>
+                    <th>DUE DATE</th>
+                    <th>ACTIONS</th>
+                    <th>DELETE</th>
+                  </tr>
+                </thead>
+                <tbody v-if="notes.length > 1 || notes.length === 1">
+                  <tr v-for="note in notes" @click="getNotesDetailsById(note.noteId)"
+                    :class="{highLightActive:note.highLightActive==1}">
+                    <td :class="note.noteStatusId == '2' ? 'notesOpacity' : ''">{{note.noteTypeName}}</td>
+  
+                    <td :class="note.noteStatusId == '2' ? 'notesOpacity' : ''">{{note.noteSubject}}</td>
+  
+                    <td :class="note.noteStatusId == '2' ? 'notesOpacity' : ''">{{note.dateOrTimeDue}}</td>
+  
+                    <td v-if="note.noteStatusId == '0'">
+                      <span v-for="status in notesActions" style="margin-left: 20px;">
+                        <i v-if="note.noteTypeId == 2 && note.isActionReqd" :class="status.class"
+                          @click="changeNoteStatus(note.noteId, status.noteStatusId, note)"
+                          style="color: #F44336; font-size: 19px;"></i>
+                      </span>
+                      <span v-if="note.highLightActive==1 && note.showEditIcon==1"
+                        :class="{editIconActive:note.showEditIcon==1}">
+                        <i class="fas fa-pencil"></i>
+                      </span>
+                    </td>
+                    <td v-else-if="note.noteStatusId == '2'">
+                      <span v-for="status in notesActions" style="margin-left: 20px;">
+                        <i class="fas fa-undo" @click="changeNoteStatus(note.noteId, 0,note)"
+                          style="color: #4d70e0; font-size: 15px;"></i>
+                      </span>
+                      <span v-if="note.highLightActive==1 && note.showEditIcon==1"
+                        :class="{editIconActive:note.showEditIcon==1}">
+                        <i class="fas fa-pencil"></i>
+                      </span>
+                    </td>
+                    <td v-else>
+                      <span v-if="note.highLightActive==1 && note.showEditIcon==1"
+                        :class="{editIconActive:note.showEditIcon==1}">
+                        <i class="fas fa-pencil"></i>
+                      </span>
+                    </td>
+                    <td>
+                      <i style="color: #F44336; font-size: 15px;" @click= "changeNoteStatus(note.noteId,3,note)" class="fas fa-trash-alt" v-if="!note.taskTypeId"></i>           
+                    </td>
+                  </tr>
+  
+                </tbody>
+                <tbody v-else-if="notes.length === 0">
+                  <tr>
+                    <td>
+                      No notes for this reservation.
+                    </td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+  
+  
+        </section>  -->
+      </div>
+      
+      <div class="col-md-5 editContainer gp-edit-container guestprofileEditContainer">
+          <div class="row" v-if="displaySectionValue === 'guestinfo' && showCorpLedgerFolio != 'showCorpLedger'">
+            <div class="col-md-12">
+              <h6 class="pull-left mt-2" v-if="guestInfo.AccountType == 3">Guest Info</h6> 
+              <h6 class="pull-left mt-2" v-else>Company Info</h6> 
+              <button type="button" class="btn btn-success btn-sm pull-right mt-1" @click="saveGuestProfile" style="margin-top: 0 !important;">Save</button>
+              <div class="listPropOptions">
+                <select v-model="guestInfo.AccountType" v-if="$route.params.GuestProfileId =='-1'" class="form-control">
+                  <option value=3>Guest</option>
+                  <option value=7>Company</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        <section v-if="displaySectionValue === 'guestinfo' && showCorpLedgerFolio != 'showCorpLedger'">
+          
+          <div class="row">
+            <div class="col-md-12">
+              <div class="form-group">
+                <label v-if="guestInfo.AccountType == 3">First Name</label>
+                <label v-else>Company Name</label>
+                <input type="text" class="form-control" v-model="guestInfo.GuestFirstName" id="firstName" name='firstName' v-validate="'required'"
+                       :class="{'input': true, 'is-danger': errors.has('firstName') }">
+                       <span v-show="errors.has('firstName')" class="invalid-feedback">
+                        <i v-show="errors.has('firstName')" class="fa fa-warning"></i> 
+                        <span v-for="e in errors.items">
+                          <span v-if="e.rule == 'required' && e.field == 'firstName' && guestInfo.AccountType == 3">{{ errors.first('firstName') }}</span>                         
+                          <span v-else-if="e.rule == 'required' && e.field == 'firstName' && guestInfo.AccountType == 7"> The CompanyName field is required.</span>                         
+                        </span>
+                      </span>
+              </div>
+            </div>
+            <div class="col-md-12" v-if="guestInfo.AccountType == 3">
+              <div class="form-group">
+                <label>Last Name</label>
+                <input type="text" class="form-control" v-model="guestInfo.GuestLastName" id="lastName" name='lastName' v-validate="'required'"
+                       :class="{'input': true, 'is-danger': errors.has('lastName') }">
+                <!-- <i v-show="errors.has('lastName')" class="fa fa-warning"></i>
+                <span v-show="errors.has('lastName')" class="help is-danger">{{ errors.first('lastName') }}</span> -->
+                <span v-show="errors.has('lastName')" class="invalid-feedback">
+                  <i v-show="errors.has('lastName')" class="fa fa-warning"></i> {{ errors.first('lastName') }}</span>
+              </div>
+            </div>
+          </div>
+          <!-- <div class="row">
+            <div class="col-md-12">
+              <div class="form-group">
+                <label>Email</label>
+                <input type="text" v-model="guestInfo.Emailaddress" class="form-control" id="email" name='email'>
+              </div>
+            </div>
+            <div class="col-md-12">
+              <div class="form-group">
+                <label>Phone</label>
+                <input type="text" class="form-control" v-model="guestInfo.GuestPhoneNumber" id="Phone" name='Phone' v-validate="'required'"
+                       :class="{'input': true, 'is-danger': errors.has('Phone') }">
+                <i v-show="errors.has('Phone')" class="fa fa-warning"></i>
+                <span v-show="errors.has('Phone')" class="help is-danger">{{ errors.first('Phone') }}</span>
+              </div>
+            </div>
+          </div>    -->
+          <div class="row">
+            <div class="mulitFieldWrap">
+              <div class="multiInfoBtn" @click="addAdditionalEmail()">
+                Add more</div>
+              <div class="col-md-12" v-for="(email, index) in additionalEmails">
+                <div class="form-group">
+                  <label>Email</label>
+                  <span  class="multiInfoCancelBtn" v-if="index > 0" @click=removeaddAdditionalEmail(email)> <i class="fal fa-trash-alt"></i></span>
+
+                  <div class="input-group">
+                    <!-- <input type="text" class="form-control" value="email.Emailaddress" :name="'email' + index" v-validate="index == 0 ? 'required|email' : 'email'" autocomplete="off" -->
+                    <input type="email" class="form-control" value="email.Emailaddress" :name="'email' + index"
+                      v-validate="((index == 0) && (!additionalPhoneNumbers[0].PhoneNumber)) ? 'required|email' : 'email'"
+                      autocomplete="off" v-model.trim="email.Emailaddress"
+      
+                      data-vv-validate-on="none|custom">
+                  </div>
+                  <span v-show="errors.has('email' + index)" class="invalid-feedback">
+                    <i v-show="errors.has('email' + index)" class="fa fa-warning"></i>
+                    <span v-for="e in errors.items">
+                      <span v-if="e.rule == 'email'"> Enter Valid Email</span>
+                      <span v-else-if="e.rule == 'required' && e.field == 'email0'"> Either email or phone number is
+                        required.
+                      </span>
+                    </span>
+                  </span>
+
+                  <!-- <span v-show="errors.has('email' + index)" class="invalid-feedback">
+                    <i v-show="errors.has('email' + index)" class="fa fa-warning"></i>{{ JSON.stringify(errors) }}</span> -->
+                </div>
+              </div>
+            </div>
+            <div class="mulitFieldWrap">
+              <div class="multiInfoBtn" @click="addAdditionalPhoneNumbers()">
+                Add more</div>
+              <div class="col-md-12" v-for="(phone, index) in additionalPhoneNumbers">
+                <div class="form-group">
+                  <label>Phone</label>
+                  <!-- <span style="color: #4d70e0; cursor: pointer; font-size: 12px; float: right" @click="addAdditionalPhoneNumbers()" :disabled="fncIsReservationSave && (fncIsReservationSave.isAssigned === -1 && fncIsReservationSave.functionState === 2)"
+                v-if="fncIsReservationSave && (fncIsReservationSave.isAssigned === 1 || (fncIsReservationSave.isAssigned === -1 && fncIsReservationSave.functionState === 2)) "> -->
+                  <!-- <span class="fa fa-plus"></span> -->
+                  </span>
+                  <span class="multiInfoCancelBtn" v-if="index > 0" @click=removeaddAdditionalPhoneNumbers(phone)><i class="fal fa-trash-alt"></i></span>
+                  <div class="input-group">
+                    <input type="text" class="form-control" value="phone.PhoneNumber" autocomplete="off"
+                      name="phoneNumber"
+                      v-validate="(additionalEmails[0] && !additionalEmails[0].Emailaddress) ? 'required|phoneOrEmail' : 'phoneOrEmail'"
+                      v-model="phone.PhoneNumber"
+                      :class="{'input': true, 'is-danger': errors.has('lastName') }"
+                      data-vv-validate-on="none">
+                  </div>
+
+                  <span v-show="errors.has('phoneNumber')" class="invalid-feedback">
+                    <i v-show="errors.has('phoneNumber')" class="fa fa-warning"></i>
+                    <span v-for="e in errors.items">
+                      <span v-if="e.rule == 'phoneOrEmail'"> Phone Number must be a valid Phone Number</span>
+                      <span v-else-if="e.rule == 'required' && e.field == 'phoneNumber'"> Either email or phone number
+                        is required.</span>
+                    </span>
+                  </span>
+                </div>
+
+              </div>
+            </div>
+          </div>
+          <div class="row">
+          <div class="col-md-12">
+              <div class="form-group">
+                <label>Address1</label>
+                <vue-google-autocomplete id="map" v-bind:value="guestInfo.Address" classname="form-control"  placeholder="Search Address"
+                  v-on:placechanged="getAddressData" @reset="resetAddress"  :shortAddress="guestInfo.Address || guestInfo.shortAddress">
+                </vue-google-autocomplete>
+              </div>
+            </div>
+              
+            </div>
+            <div class="row">
+            <div class="col-md-12">
+              <div class="form-group">
+                <label>Address2</label>
+                <input class="form-control" placeholder="Enter Your Address" v-model="guestInfo.Address2">
+              </div>
+            </div>
+          </div>
+            <div class="row">
+            <div class="col-md-12">
+              <div class="form-group">
+                <label>City</label>
+                <input class="form-control" placeholder="Enter Your CityName" v-model="guestInfo.CityName">
+              </div>
+            </div>
+          </div>
+            <div class="row">
+            <div class="col-md-12">
+              <div class="form-group">
+                <label>State</label>
+                <input class="form-control" placeholder="Enter Your StateName" v-model="guestInfo.StateName">
+              </div>
+            </div>
+          </div>
+            <div class="row">
+            <div class="col-md-12">
+              <div class="form-group">
+                <label>Country</label>
+                <input class="form-control" placeholder="Enter Your CountryName" v-model="guestInfo.CountryName">
+              </div>
+            </div> 
+          </div>    
+            
+            <div class="row">
+                <div class="col-md-12">
+                  <div class="form-group">
+                    <label>Zip Code</label>
+                    <input type="text" class="form-control" placeholder="Enter Your Zip Code " autocomplete="off"
+                      v-model="guestInfo.PostalCode" id="zip" name='zip'>
+                  </div>
+                </div>
+              </div>
+
+              
+          
+        </section>
+        <!-- carddetails -->
+        <section v-if="displaySectionValue === 'priorStayInfo'">
+            <div class="gp-prior-table" v-if="guestPriorStays && guestPriorStays.length > 0">
+                <!-- <button type="button" class="btn btn-default btn-sm btn-sm-icon pull-right" @click="createReservationWithThisGuest(guestInfo)" style="margin-top: -5px; margin-bottom: 5px;"><i class="fa fa-plus"></i></button> -->
+                <div class="gp-stay-head">
+                  <span>since {{formatArrivalDate(guestBookings.BookedOnDate)}}</span>
+                  <span>{{guestPriorStays.length}} {{guestPriorStays.length && guestPriorStays.length == 1 ? 'Booking' : 'Bookings'}}</span>
+                  <!-- <i class="fa fa-plus" @click="createReservationWithThisGuest(guestInfo)"></i> -->
+                </div>
+
+                <div  class="dTable" >
+                  <ul>
+                    <li class="guest-prior-list" v-for="guest in guestPriorStays">
+                    <div class="dTBodyRow" :class="guest.ResStatusName ? guest.ResStatusName : ''" @click="showReservationSummaryPanel(guest.reservationId)">
+                        <div class="dCell gp-prior-icon">
+                          <span class="gpSourceIcon" :class="(guest.SubSourceName && guest.SubSourceName != '' && guest.SubSourceName != null) ? guest.SubSourceName : (guest.sourceName && guest.sourceName !='' && guest.sourceName != null) ? guest.sourceName : ''"></span>
+                        </div>
+                        <div class="dCell gp-guest-names">
+                          <div>
+                            <strong>
+                            {{guest.GuestFirstName}} {{guest.GuestLastName}} 
+                            </strong>
+                            <div v-if="guest.NumberOfAdults == 0">
+                              <span>{{guest.NoOfGuests}}</span><span> Persons</span>
+                            </div>
+                            <div v-if="guest.NumberOfAdults != 0">
+                              <span>{{guest.NumberOfAdults}}</span><span> Adults,</span> 
+                              <span>{{guest.NumberOfChildren}}</span><span v-if="guest.NumberOfChildren > 1 || guest.NumberOfChildren == 0"> Children</span>
+                              <span  v-if="guest.NumberOfChildren == 1"> Child</span>
+                            </div>
+                            <div class="srt-lt">
+                              <strong>{{guest.PropertyNickName}}</strong>
+                              <strong>{{guest.UnitNickName}}</strong>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="dCell gp-staydates srt-lt">
+                          <div>
+                            <strong>{{formatPriorStayDate(guest.arrivalDate)}}</strong><br>
+                            <span>{{getDay(guest.arrivalDate)}}</span>
+                          </div>
+                          <div>
+                            <strong>{{formatPriorStayDate(guest.departureDate)}}</strong><br>
+                            <span>{{getDay(guest.departureDate)}}</span>
+                          </div>
+
+                          <!-- <div>
+                            <span>{{formatPriorStayDate(guest.arrivalDate)}}</span>
+                            <span>{{formatPriorStayDate(guest.departureDate)}}</span>
+                          </div> -->
+                        </div>
+                    </div>
+                    </li>
+                  </ul>
+                 
+                </div>
+              </div>
+          
+
+        </section>
+        <section  v-if="displaySectionValue === 'cardinfo'">
+          <div class="row" v-if="showPaymentList" >
+            <div class="col-md-12">
+              <!-- <p v-if="guestPaymentCards.length == 0">No Payments options </p> -->
+              <ul class="paymentList blank" v-if="guestPaymentCards.length == 0">
+                <li @click="addPaymentDetails(false)">
+                  <i class="far fa-plus"></i>
+                  <br> Add Payment Options
+                </li>
+              </ul>
+              <ul class="paymentList "  v-if="guestPaymentCards.length > 0">
+                <li v-for="card in guestPaymentCards" :class="card.disableSave ? 'inactive' : 'active'"  @click="viewCurrentCardDetails(card)">
+                  <span class="ch-name">{{card.NameOnCard}} </span>
+                  <br>
+                  <span v-if="card.CCLast4Digits && card.CCLast4Digits !== null"> **** **** **** {{card.CCLast4Digits}}
+                  </span>
+  
+                  
+                  <br> {{card.Expirationdate}}
+                  
+                  <span :class="['cardType', card.CardType]"></span>
+                </li>
+                <li @click="addPaymentDetails(false)" class="blank">
+                  
+                  <i class="far fa-plus"></i>
+                  <br> Add More Payment Options
+                </li>
+              </ul>
+            </div>
+          </div>
+           <div class="row" v-if="showPaymentDetails" >
+            
+            <div class="col-md-12">
+              <h6 class="pull-left mt-2">Payment Details</h6>
+              
+              <button  class="btn btn-success btn-sm pull-right" :disabled="disabledMultiSave || paymentCardInfo.disableSave" @click="getCardTokenBY" >Save</button>
+            
+              <button class="btn btn-blank-danger btn-sm pull-right mr-2" @click="cancelPaymentCardInfo" >Cancel</button>
+              <button class="btn btn-blank-danger btn-sm pull-right mr-2" @click="InActivePaymentCardInfo" v-if="paymentCardInfo.PaymentInfoId != -1" style="background: #d4d4d4 !important;color: #484848; border: #998f7a solid 1px !important;">InActive</button>
+
+            </div>
+            <div class="col-md-12">
+              
+            </div>
+  
+            <div class="col-md-12">
+              <div class="form-group">
+                <label class="form-label">Card Number</label>
+                <input :disabled="paymentCardInfo.PaymentInfoId != -1" @keyup="GetCardType(paymentCardInfo.CreditCard)" @blur="GetCardType(paymentCardInfo.CreditCard)"
+                  
+                  type="text" class="form-control" v-model.trim="paymentCardInfo.CreditCard" >
+  
+
+
+              <div class="allPaymentCards">
+                <!-- <span class="paycard disable-visa" :class="paymentCardInfo.CreditCard ? paymentCardInfo.CardType: ''"></span>
+                <span class="paycard disable-mc" :class="paymentCardInfo.CreditCard ? paymentCardInfo.CardType: ''"></span>
+                <span class="paycard disable-ae" :class="paymentCardInfo.CreditCard ? paymentCardInfo.CardType: ''"></span>
+                <span class="paycard disable-discover" :class="paymentCardInfo.CreditCard ? paymentCardInfo.CardType: ''"></span>
+                <span :class="paymentCardInfo.CreditCard ? paymentCardInfo.CardType: ''"></span> -->
+                <span v-for="type in paymentLedgerAcounts" v-if="type.IsCreditcard" class="paycard"
+                  :class="['disable-'+type.PaymentMethod ,paymentCardInfo.CreditCard || paymentCardInfo.CCLast4Digits ? paymentCardInfo.CardType: '']"></span>
+              </div>
+  
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="form-group">
+                <label class="form-label">Expiry Month</label>
+                <select :disabled="paymentCardInfo.disableSave" v-model="paymentCardInfo.ExpirationMonth"
+                  
+                  class="form-control" >
+                  <option value="-1">Month</option>
+                  <option v-for="month in months" :value="month.value">
+                    {{month.name}}
+                  </option>
+                </select>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="form-group">
+                <label class="form-label">Expiry Year</label>
+                <select v-model="paymentCardInfo.ExpirationYear" :disabled="paymentCardInfo.disableSave" class="form-control" >
+                <option value="-1">Year</option>
+                <option v-for="year in expiryYears" :value="year">
+                  {{year}}
+                </option>
+              </select>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="form-group">
+                <label class="form-label">CVV</label>
+                <input
+                
+                  type="text" class="form-control password" v-model="paymentCardInfo.CvvCode" :disabled="paymentCardInfo.disableSave" >
+              </div>
+            </div>
+            <div class="col-md-12">
+              <div class="form-group">
+                <label class="form-label">Name on Card</label>
+                <input :disabled="paymentCardInfo.PaymentInfoId != -1"
+                 
+                  type="text" class="form-control" v-model="paymentCardInfo.NameOnCard" >
+              </div>
+            </div>
+             <div class="col-md-12" @click="showAddressAndZipcode">
+              <span class="moreLink pull-right mr-2">More Info</span>
+            </div>
+            <div class="col-md-12" v-if="addressAndZipcodeShow">
+              <div class="form-group">
+                <label class="form-label">Address</label>
+                <input
+                  
+                  type="text" class="form-control" v-model="paymentCardInfo.AddressDetails" :disabled="paymentCardInfo.disableSave">
+              </div>
+            </div>
+            <div class="col-md-12" v-if="addressAndZipcodeShow">
+              <div class="form-group">
+                <label class="form-label">Zip Code</label>
+                <input
+                  
+                  type="text" class="form-control" v-model="paymentCardInfo.PostalCode"  :disabled="paymentCardInfo.disableSave"  >
+              </div>
+            </div>
+            <!-- <div class="col-md-12">
+              <div class=" pull-left noClear">
+                <label class="slideCheck">
+                  <input type="checkbox" v-model="Savetoallfuturereservations" />
+                  <span></span>
+                </label>
+                <label style="float: left; margin: 5px 12px 0px 10px; font-size: 12px; color: rgb(134, 134, 134);">Save CreditCard To Future Reservations</label>
+              </div>
+             
+            </div>  -->
+            <div class="col-md-12">
+              <div class=" pull-left noClear">
+                <label class="slideCheck">
+                  <input type="checkbox" v-model="paymentCardInfo.IsDefault" :disabled="paymentCardInfo.disableSave" />
+                  <span></span>
+                </label>
+                <label style="float: left; margin: 5px 12px 0px 10px; font-size: 12px; color: rgb(134, 134, 134);">Set As Default Payment Option</label>
+              </div>
+             
+            </div> 
+          </div> 
+        </section>
+
+        <section v-if="displaySectionValue === 'corporateLedgerInfo' || showCorpLedgerFolio === 'showCorpLedger'">
+          
+
+          <!-- Folio Header  -->
+
+          <div class="editContinerHeading folioTitleHeader gpTitleHeader">    
+            <div class="d-flex">
+            <button class="btn btn-default btn-sm" @click="backToFolioList()" style="width: 28px;padding: 4px 7px;" :disabled="isFolioListVisible">
+              <i class="fa fa-long-arrow-left"></i>         
+            </button>             
+            <select class="form-control customSelectOpt" @change="getFolioList($event.target.value)" v-model="selectedInvoiceId" style="width: 120px; margin-left: 17px; height: 28px; padding: 2px 7px;"> 
+              <option value="allFolio">All Folios</option>
+              <option value="masterFolio">Master Folio</option>
+              <option v-for="balanceTransfer in invoiceList" :value="balanceTransfer.ItemId" v-if="!balanceTransfer.isvoided">{{balanceTransfer.QuickbookInvoiceNo && balanceTransfer.QuickbookInvoiceNo != null ? balanceTransfer.QuickbookInvoiceNo : balanceTransfer.InvoiceNo}}</option>            
+            </select>
+            <!-- <div class="btn invoice-btn">
+              <span class="ratePlanControl">
+              
+                <Select2 v-model="myValue" :settings="{placeholder: 'Search',width: '50%'}"
+                  @select="myRatePlanSelectEvent($event)" :options="RatePlanList" />
+              </span>
+            </div> -->
+          </div>
+            <div class="searchGroup d-flex" >
+              <div class="form-group searchTags mr-3 mb-0" >
+                <div class="input-group inputSearch">
+                    <button class="input-group-btn" :disabled="!isFolioListVisible">
+                        <span class="fa fa-search" style="position: relative;top: 2px;"></span>
+                    </button>
+                    <input  type="text" class="form-control" v-model.trim="searchText" :disabled="!isFolioListVisible">                 
+                </div>
+              </div>
+              <button title="" class="btn btn-default folio-setting mr-3 btn-sm btn-sm-icon" v-if="showFolioDetails || showMasterFolio" @click="showFolioSetting()" style="box-shadow: unset;border: #bfbfbf solid 1px;width: 28px;height: 28px;padding:0.23rem 0.4rem;">
+                <i class="fa fa-cog" aria-hidden="true"></i>
+              </button>
+              <div class="dropdown" @click="getReservationDetails">
+                  <button title="" class="btn btn-default dropdown-toggle  btn-sm btn-sm-icon" type="button" data-toggle="modal" style="box-shadow: unset;border: #bfbfbf solid 1px;width: 28px;height: 28px;" :disabled="!showFolioDetails"
+                  data-target="#invoiceToBePrinted">
+                      <!-- <i class="fa fa-ellipsis-v"></i> -->
+                      <i class="fas fa-download"></i>
+                  </button>
+              </div>
+            </div>
+            </div>
+              <!-- </div> -->
+          <!-- Corporate Ledger Folio List -->
+          <div class="editContinerHeading click" @click="getBalananceTransferInvoiceList" v-if="isFolioListVisible && showCorpLedgerFolioList && showCorpLedgerFolio != 'showCorpLedger'">     
+            <span class="mt-2">
+              <i v-if="showFolioList" class="fa fa-chevron-down mr-2"></i>
+              <i v-if="!showFolioList" class="fa fa-chevron-right mr-2"></i>
+              <span>{{`${showFilteredFolioList ? 1 : balanceTransferInvoiceList.filter(item=> !item.isvoided).length}`}} </span>Folio List 
+              <span v-if="totalFolioAmount && Object.keys(totalFolioAmount).length > 0"
+                class="totalNumeric totalItems pull-right paymentNumeric" style="font-weight: 600 !important;font-size: 16px !important;">{{formatMoney(totalFolioAmount.Total)}}</span>
+                <button type="button" class="btn btn-warning btn-sm ml-2" v-if="((selectAllInvocies && checkSelectedInvoices) || checkSelectedInvoices)" @click="voidSelectedInvocies">Void</button>
+                <button type="button" class="btn btn-blank-danger btn-sm ml-2" v-if="((selectAllInvocies && checkSelectedInvoices) || checkSelectedInvoices)" @click="cancelInvocieVoid">Cancel</button>
+              
+            </span>            
+            <!-- <span v-if="folioCharges && folioCharges.TotalValue && folioCharges.TotalValue !== null"
+            class="totalNumeric totalItems pull-right paymentNumeric" style="font-weight: 600 !important;font-size: 16px !important;">{{formatMoney(folioCharges.Payments)}}</span> -->
+          </div>
+          <div class="editFolioContiner CPfolioItems" v-show="showFolioList" v-if="isFolioListVisible && showCorpLedgerFolioList && showCorpLedgerFolio != 'showCorpLedger'">
+            <div v-if="balanceTransferInvoiceList.length > 0">
+              <div class="dTable noMinW">
+              <div class="dTHead">
+                <div class="dCell"><label class="checkLabel"><input style="cursor: pointer;" type="checkbox" v-model="selectAllInvocies" @change="selectInvoiceToVoid(null,$event)"
+                  /></label></div>
+                 <!-- v-model="selectAllFolio" v-on:change="selectAllFolioItems($event)"
+                 :disabled="folioUpdate || ShowDropdown"  -->
+                <div class="dCell">DATE</div>
+                <div class="dCell">INV. NO.</div>
+                <div class="dCell">DESCRIPTION
+                  <span style="color: #95a7af;font-size: 13px;font-weight: 400;text-transform: none;">Listing</span>
+                </div>                
+                <div class="dCell" style="text-align:right">BALANCE
+                  <span style="color: #95a7af;font-size: 13px;font-weight: 400;text-transform: none;">Total Amount</span></div>                
+              </div>
+              <!-- newFolio -->
+              <div class="dTBody folioBody" v-if="!showFilteredFolioList">
+                <!-- <div class="pdWrap"> -->
+                 <div class="dTBodyRow" style="cursor: pointer;" :class="balanceTransferItem.ItemStatusId == 3 ? 'voidedFolio':'newFolio'" v-for="(balanceTransferItem, index) in balanceTransferInvoiceList" v-if="balanceTransferItem.ItemStatusId != 3 || showBTVoidItems" @click="folioSection(balanceTransferItem)">
+                  <div class="dCell">
+                    <label class="checkLabel">
+                      <input style="cursor: pointer;" type="checkbox" v-model="balanceTransferItem.isChecked" @change="selectInvoiceToVoid(balanceTransferItem,$event)" :disabled="balanceTransferItem.isvoided || balanceTransferItem.ledgerAccountName == 'Master Folio' || balanceTransferItem.Payments != 0"/>
+                    </label>
+                  </div>
+                  <div class="dCell" v-if="balanceTransferItem.DateEffective">{{formatDate(balanceTransferItem.DateEffective)}}</div>
+                  <div class="dCell" v-else>-</div>
+                  <div class="dCell" v-if="balanceTransferItem.QuickbookInvoiceNo || balanceTransferItem.InvoiceNo" style="text-decoration: underline; color: #0094ff;cursor: pointer;"
+                  @click="getFolioDetails(balanceTransferItem.ledgerAccountName,balanceTransferItem.ItemId,balanceTransferItem.isvoided)">{{balanceTransferItem.QuickbookInvoiceNo && balanceTransferItem.QuickbookInvoiceNo != null ? balanceTransferItem.QuickbookInvoiceNo : balanceTransferItem.InvoiceNo}}</div>
+                  <div class="dCell" v-else>-</div>
+                  <div class="dCell" v-if="balanceTransferItem.ledgerAccountName == 'Master Folio'">{{balanceTransferItem.ledgerAccountName}}</div>
+                  <div class="dCell" v-else>{{balanceTransferItem.companyTransferDescription}}
+                    <span>{{balanceTransferItem.Nickname}}</span>
+                  </div>                  
+                  <div class="dCell" style="text-align:right" :class="balanceTransferItem.Balance && getBalancePriority(balanceTransferItem) ? 'negativeAmount' : 'positiveAmount' ">{{balanceTransferItem.Balance ? formatMoney(balanceTransferItem.Balance) : '--'}}
+                    <span style="color: #95a7af;font-size: 13px;font-weight: 400;text-transform: none;">{{formatMoney(balanceTransferItem.Amount)}}</span></div>
+
+                </div>
+              <!-- </div> -->
+              </div>
+
+              <div class="dTBody folioBody" v-if="showFilteredFolioList">
+                <!-- <div class="pdWrap"> -->
+                  <!-- v-for="(balanceTransferItem, index) in getFilteredFolioList"  -->
+                 <div class="dTBodyRow newFolio" style="cursor: pointer;" @click="getFolioDetails(null,getFilteredFolioList.ItemId)">
+                  <div class="dCell">
+                    <label class="checkLabel">
+                      <input style="cursor: pointer;" type="checkbox"/>
+                    </label>
+                  </div>
+                  <div class="dCell">{{formatDate(getFilteredFolioList.DateEffective)}}</div>
+                  <div class="dCell">{{getFilteredFolioList.QuickbookInvoiceNo && getFilteredFolioList.QuickbookInvoiceNo != null ? getFilteredFolioList.QuickbookInvoiceNo : getFilteredFolioList.InvoiceNo}}</div>
+                  <div class="dCell">{{getFilteredFolioList.companyTransferDescription}}
+                    <span>{{getFilteredFolioList.Nickname}}</span>
+                  </div>                  
+                  <div class="dCell" style="text-align:right">{{formatMoney(getFilteredFolioList.Amount)}}</div>
+
+                </div>
+              <!-- </div> -->
+              </div>
+              </div>
+              <div class=" pull-left noClear ml-3 mt-1" v-if="balanceTransferInvoiceList.length > 0">
+                <label style="float:left;     margin: 4px 12px 0 0; font-size: 12px; color: #555555;">Show Void Items
+                </label>
+                <label class="slideCheck">
+                  <input type="checkbox" v-model="showBTVoidItems">
+                  <span></span>
+                </label>
+              </div>
+              <div v-if="showBTVoidItems && !balanceTransferInvoiceList.filter(item => item.isvoided).length" class="pull-left noClear ml-3 mt-1 errorMsg">
+                <label>No void items to show</label>
+              </div>
+            </div>
+            
+            <!-- <span class="totalNumeric totalItems pull-right paymentTotal">
+            <span>            
+              </span>Total: {{formatMoney(paymentCharges.TotalAmount)}}          
+             </span> -->
+          </div>
+          <!-- Folio Details Section -->
+        <section v-if="(displaySectionValue === 'corporateLedgerInfo' || showCorpLedgerFolio == 'showCorpLedger') && !isFolioListVisible && showCorpLedgerFolioList">   
+          <div class="editContinerHeading click" @click="getBalananceTransferInvoiceDetails">          
+            <span class="mt-2">
+              <i v-if="showFolioDetails" class="fa fa-chevron-down mr-2"></i>
+              <i v-if="!showFolioDetails" class="fa fa-chevron-right mr-2"></i>
+              <span v-if="!showFolioDetails">{{balanceTransferInvoiceDetails.length}} </span>Folio Details
+              <!-- <button type="button" class="btn btn-primary btn-sm ml-2" ><i class="fa fa-plus"></i>Add Items</button> -->
+              <!-- @click="addItems(addFolioItem)" -->
+            </span>
+            <!-- <span v-if="folioCharges && folioCharges.TotalValue && folioCharges.TotalValue !== null"
+            class="totalNumeric totalItems pull-right paymentNumeric" style="font-weight: 600 !important;font-size: 16px !important;">{{formatMoney(folioCharges.Payments)}}</span> -->
+          </div>
+
+          <div class="editFolioContiner CPfolioDetails" v-show="showFolioDetails">
+            <div v-if="balanceTransferInvoiceDetails.length > 0">
+              <div class="dTable noMinW">
+              <div class="dTHead">
+                <div class="dCell"><label class="checkLabel"><input style="cursor: pointer;" type="checkbox"
+                  /></label></div>
+                 <!-- v-model="selectAllFolio" v-on:change="selectAllFolioItems($event)"
+                 :disabled="folioUpdate || ShowDropdown"  -->
+                <div class="dCell">DATE</div>
+                <div class="dCell">DESCRIPTION</div>
+                <div class="dCell" style="text-align:right">AMOUNT</div>
+                <div class="dCell" style="text-align:right">TAX</div>
+                <div class="dCell" style="text-align:right">TOTAL</div>
+              </div>
+              <!-- newFolio -->
+              <div class="dTBody folioBody">
+                <!-- <div class="pdWrap"> -->
+                 <div class="dTBodyRow newFolio" v-for="(folioData, index) in balanceTransferInvoiceDetails">
+                  <div class="dCell">                    
+                    <label class="checkLabel">
+                      <input style="cursor: pointer;" type="checkbox" disabled/>
+                    </label>
+                  </div>                 
+                  <div class="dCell">{{formatDate(folioData.DateEffective)}}</div>
+                  <div class="dCell">{{folioData.ItemDescription}}</div>
+                  <div class="dCell" style="text-align:right">{{formatMoney(folioData.Amount)}}</div>
+                  <div class="dCell" style="text-align:right">{{formatMoney(folioData.Tax)}}</div>
+                  <div class="dCell" style="text-align:right">{{formatMoney(getTotalAmount(folioData.Amount,folioData.Tax))}}</div>
+
+                </div>
+              <!-- </div> -->
+              </div>
+              <div class="dTBody folioFooter">
+                <div class="dTBodyRow">
+                  <div class="dCell" style="font-weight: bold;max-width: 13%;">Subtotal:</div>
+                  <div class="dCell" style="min-width: 14%;"></div>
+                  <div class="dCell" style="min-width: 14%;"></div>
+                  <div class="dCell" style="text-align: right;">{{formatMoney(totalAmountVal)}}</div>
+                  <div class="dCell" style="text-align: right;">{{formatMoney(totalTaxVal)}}</div>
+                  <div class="dCell" style="text-align: right;" v-if="totalBalanceTransfer && Object.keys(totalBalanceTransfer).length > 0">
+                  {{formatMoney(totalBalanceTransfer.total)}}</div>
+                </div>
+              </div>
+              </div>
+            </div>
+            
+            <!-- <span class="totalNumeric totalItems pull-right paymentTotal">
+            <span>      
+              </span>
+              {{totalAmountVal}}
+              {{totalTaxVal}}
+              <div v-if="totalBalanceTransfer && Object.keys(totalBalanceTransfer).length > 0">
+              Total: {{formatMoney(totalBalanceTransfer.total)}}   
+            </div>       
+             </span> -->
+
+             <!-- <div class="dTBody folioFooter" style="overflow: visible"> -->
+              <!-- <span class="totalNumeric totalItems pull-right paymentTotal">
+              <div class="dTBodyRow">
+              </div>
+              </span> -->
+
+            </div>
+          <!-- </div> -->
+        </section>
+
+          <!-- Master Folio list -->
+          <div class="editContinerHeading click" @click="getFolioItemsDetail" v-if="!showCorpLedgerFolioList">
+            <span class="mt-2">
+              <i v-if="showMasterFolio" class="fa fa-chevron-down mr-2"></i>
+              <i v-if="!showMasterFolio" class="fa fa-chevron-right mr-2"></i>
+              <span>{{masterFolioList.filter(folioItem => folioItem.IsVoided === 0).length}}</span> Folio Items
+              <!-- <span v-if="folioItemsDetails.length > 1">s</span> -->
+              <button type="button" class="btn btn-primary btn-sm ml-2" @click="showItems('displayAddFolioItem')" 
+              :disabled="fncIsFolioNew && (fncIsFolioNew.isAssigned === -1 && fncIsFolioNew.functionState === 2)"
+              v-if="fncIsFolioNew && (fncIsFolioNew.isAssigned === 1 || (fncIsFolioNew.isAssigned === -1 && fncIsFolioNew.functionState === 2)) && !showRatePlanSave && !selectedFolioItemToEdit && !ShowDropdown && selectedItemCount"><i class="fa fa-plus"></i> Add Items</button>
+              
+
+                <!-- :disabled="fncIsFolioNew && (fncIsFolioNew.isAssigned === -1 && fncIsFolioNew.functionState === 2) || (fncIsReservationSave.isAssigned === -1 && fncIsReservationSave.functionState === 2)"
+                v-if="fncIsFolioNew && (fncIsFolioNew.isAssigned === 1 || (fncIsFolioNew.isAssigned === -1 && fncIsFolioNew.functionState === 2)) && !showRatePlanSave && !selectedFolioItemToEdit && !ShowDropdown && selectedItemCount" -->
+              
+                <button type="button" class="btn btn-primary btn-sm" @click="editFolioItem"
+                :disabled="fncIsFolioNew && (fncIsFolioNew.isAssigned === -1 && fncIsFolioNew.functionState === 2) || (fncIsReservationSave && fncIsReservationSave.isAssigned === -1 && fncIsReservationSave.functionState === 2)"
+                v-if="fncIsFolioNew && (fncIsFolioNew.isAssigned === 1 || (fncIsFolioNew.isAssigned === -1 && fncIsFolioNew.functionState === 2)) 
+                && !showRatePlanSave && !ShowDropdown && selectedItemCount && itemToEdit">Edit</button> 
+              <button @click="Cancel('cancelEditfolio')" class="btn btn-blank-danger btn-sm"
+              v-if="ShowDropdown && !showRatePlanSave">Cancel</button>
+               <!-- v-if="ShowDropdown && !showRatePlanSave" -->
+  
+              <!-- rateplan edit  cancel -->
+              <!-- <button @click="cancelRatePlanEdit" class="btn btn-blank-danger btn-sm showRatePlanSave"
+                >Cancel</button> -->
+                <!-- v-if="showRatePlanSave" -->
+              <!-- rateplan edit  cancel -->
+
+              <button type="button" class="btn btn-warning btn-sm editClass" @click="VoidCurrentFolioItem" :disabled="fncIsFolioUpdate && (fncIsFolioUpdate.isAssigned === -1 && fncIsFolioUpdate.functionState === 2) || isFolioDirty"
+               v-if="fncIsFolioUpdate && (fncIsFolioUpdate.isAssigned === 1 || (fncIsFolioUpdate.isAssigned === -1 && fncIsFolioUpdate.functionState === 2)) && (selectedFolioItemToEdit || selectedVoidItem) && 
+               !showRatePlanSave && !ShowDropdown && !selectedFolioItemToEdit">Void</button>
+               <!-- :disabled="fncIsFolioUpdate && (fncIsFolioUpdate.isAssigned === -1 && fncIsFolioUpdate.functionState === 2) || isFolioDirty"
+               v-if="fncIsFolioUpdate && (fncIsFolioUpdate.isAssigned === 1 || (fncIsFolioUpdate.isAssigned === -1 && fncIsFolioUpdate.functionState === 2)) && (selectedFolioItemToEdit || selectedVoidItem) && !showRatePlanSave && !ShowDropdown && !selectedFolioItemToEdit" -->
+             
+               <button type="button" class="btn btn-blank-danger btn-sm editClass" @click="CancelUpdateFolioItem" :disabled="fncIsFolioUpdate && (fncIsFolioUpdate.isAssigned === -1 && fncIsFolioUpdate.functionState === 2)"
+               v-if="fncIsFolioUpdate && (fncIsFolioUpdate.isAssigned === 1 || (fncIsFolioUpdate.isAssigned === -1 && fncIsFolioUpdate.functionState === 2)) && (selectedFolioItemToEdit || selectedVoidItem) 
+               && !showRatePlanSave && !ShowDropdown">Cancel</button>
+               <!-- :disabled="fncIsFolioUpdate && (fncIsFolioUpdate.isAssigned === -1 && fncIsFolioUpdate.functionState === 2)"
+               v-if="fncIsFolioUpdate && (fncIsFolioUpdate.isAssigned === 1 || (fncIsFolioUpdate.isAssigned === -1 && fncIsFolioUpdate.functionState === 2)) && (selectedFolioItemToEdit || selectedVoidItem) && !showRatePlanSave && !ShowDropdown" -->
+              
+               <button type="button" class="btn btn-success btn-sm" style="color:#fff; width: auto"
+                @click="saveFolioItem(selectedLedger)"
+                v-if="ShowDropdown && !showRatePlanSave">Save</button>
+               <!-- :disabled="fncIsReservationSave && (fncIsReservationSave.isAssigned === -1 && fncIsReservationSave.functionState === 2)"
+               v-if="ShowDropdown && fncIsReservationSave && (fncIsReservationSave.isAssigned === 1 || (fncIsReservationSave.isAssigned === -1 && fncIsReservationSave.functionState === 2)) && !showRatePlanSave" -->
+              <!-- <button type="button" class="btn btn-success btn-sm showRatePlanSave" style="color:#fff; width: auto"
+                @click="onChangeRatePlan"
+                >Save</button> -->
+                <!-- :disabled="fncIsReservationSave && (fncIsReservationSave.isAssigned === -1 && fncIsReservationSave.functionState === 2)"
+                v-if="showRatePlanSave && fncIsReservationSave && (fncIsReservationSave.isAssigned === 1 || (fncIsReservationSave.isAssigned === -1 && fncIsReservationSave.functionState === 2)) " -->
+                
+                <!-- Need to add -->
+              <button type="button" class="btn btn-success btn-sm editClass" @click="UpdateCurrentFolioItem"
+                :disabled="fncIsFolioUpdate && (fncIsFolioUpdate.isAssigned === -1 && fncIsFolioUpdate.functionState === 2)"
+                v-if="fncIsFolioUpdate && (fncIsFolioUpdate.isAssigned === 1 || (fncIsFolioUpdate.isAssigned === -1 && fncIsFolioUpdate.functionState === 2)) && 
+                selectedFolioItemToEdit && !selectedFolioItemToEdit.ispayment && !showRatePlanSave">Save</button>                
+  
+            </span>
+            <span 
+              class="totalNumeric totalItems pull-right paymentNumeric" style="font-weight: 600 !important;font-size: 16px !important;">{{formatMoney(folioCharges.TotalValue)}}</span>
+              <!-- v-if="folioCharges && folioCharges.TotalValue && folioCharges.TotalValue !== null" -->
+  
+          </div>
+          <!-- Edit Master Folio Items -->
+          <div class="editFolioContiner" v-show="showMasterFolio">
+            <div class="dTable noMinW">
+              <div class="dTHead">
+                <div class="dCell"><label class="checkLabel"><input style="cursor: pointer;" type="checkbox"
+                  v-on:change="selectAllFolioItems($event)"
+                  :disabled="folioUpdate || ShowDropdown"
+                  v-model="selectAllFolio"/></label></div>                    
+                <div class="dCell">DATE</div>
+                <div class="dCell">DESCRIPTION</div>
+                <div class="dCell" style="text-align:right">AMOUNT</div>
+                <div class="dCell" style="text-align:right">TAX</div>
+                <div class="dCell" style="text-align:right">TOTAL</div>
+              </div>
+              <div class="dTBody folioBody">
+                <!-- Need to add code to get master folio item -->
+                <div v-for="(folioItem, index) in masterFolioList"
+                  :class="['dTBodyRow', folioItem.IsVoided ? 'voidedFolio' : (folioUpdate && selectedFolioItemToEdit && selectedFolioItemToEdit.ItemId == folioItem.ItemId ? 'editingFolioItem' : folioItem.isedited ? 'updatedFolio' :'newFolio'), folioItem.IsNewadded ? 'newlyAdded' : '']"
+                  v-if="displayVoidItems || folioItem.IsVoided === 0">
+                  <div class="dCell">
+                    <label class="checkLabel" v-if="!folioItem.IsNewadded">
+                      <input style="cursor: pointer;" v-if="!folioItem.IsVoided" type="checkbox"
+                        v-model="folioItem.Ischecked" v-on:change="selectFolioitem($event,folioItem)"
+                        :disabled="folioUpdate || ShowDropdown" />
+                    </label>  
+                  </div>
+  
+                  <div v-on:click="scrollToCalender(index + 1, folioItemsDetails.length)" class="dCell"
+                    :class="{folioEditOnfocus:folioDateChange}"
+                    v-if="folioUpdate && !folioItem.ispayment && (selectedFolioItemToEdit && selectedFolioItemToEdit.ItemId == folioItem.ItemId) && !folioItem.IsNewadded && !folioItem.IsVoided">
+                    <datePickerComponent
+                      :isDisabled="fncIsFolioUpdate && (fncIsFolioUpdate.isAssigned === -1 && fncIsFolioUpdate.functionState === 2)"
+                      v-if="fncIsFolioUpdate && (fncIsFolioUpdate.isAssigned === 1 || (fncIsFolioUpdate.isAssigned === -1 && fncIsFolioUpdate.functionState === 2))"
+                      :value="selectedFolioItemToEdit.DateEffective" :onUpdate="updateFolioEffectiveDate"
+                      format="DD MMM YYYY" sourceFormat="'YYYY-MM-DD'" :pickerType="'date'"
+                      :objectPassedToParent="selectedFolioItemToEdit">
+                    </datePickerComponent>
+                  </div>
+                  <div class="dCell" v-else>{{formatDate(folioItem.DateEffective)}}</div>
+                  <div class="dCell"
+                    v-if="folioUpdate && !folioItem.ispayment && (selectedFolioItemToEdit && selectedFolioItemToEdit.ItemId == folioItem.ItemId) && !folioItem.IsNewadded && !folioItem.IsVoided">
+                    <!-- <input class="form-control" style="margin: -5px 0;" type="text" v-model="folioItem.ItemDescription"> -->
+                    <select
+                      :class="{folioEditOnfocus: selectedFolioItemToEdit.ledgerAccountId != folioItem.ledgerAccountId}"
+                      :disabled="fncIsFolioUpdate && (fncIsFolioUpdate.isAssigned === -1 && fncIsFolioUpdate.functionState === 2)"
+                      v-if="fncIsFolioUpdate && (fncIsFolioUpdate.isAssigned === 1 || (fncIsFolioUpdate.isAssigned === -1 && fncIsFolioUpdate.functionState === 2)) "
+                      class="form-control" v-model="selectedFolioItemToEdit.ledgerAccountId">
+                      <option v-for="LedgerItem in LedgerAcounts" v-bind:value="LedgerItem.ledgerAccountID">
+                        {{LedgerItem.ledgerAccountName}}</option>
+                    </select>
+                  </div>
+                  <div class="dCell" v-else>{{folioItem.ItemDescription}}</div>
+                  <div class="dCell" style="text-align:right;"
+                    v-if="(folioUpdate && !folioItem.ispayment && (selectedFolioItemToEdit && selectedFolioItemToEdit.ItemId == folioItem.ItemId)) && !showDefaultAmount && !folioItem.IsNewadded && !folioItem.IsVoided">
+                    <input
+                      :class="{folioEditOnfocus: selectedFolioItemToEdit.ActualFolioAmount != folioItem.ActualFolioAmount}"
+                      :disabled="fncIsFolioUpdate && (fncIsFolioUpdate.isAssigned === -1 && fncIsFolioUpdate.functionState === 2)"
+                      v-if="fncIsFolioUpdate && (fncIsFolioUpdate.isAssigned === 1 || (fncIsFolioUpdate.isAssigned === -1 && fncIsFolioUpdate.functionState === 2)) "
+                      class="form-control" style="text-align: right" type="text"
+                      v-model="selectedFolioItemToEdit.ActualFolioAmount">
+                  </div>
+                  <div class="dCell" style="text-align:right" v-else>{{formatMoney(folioItem.FolioAmount)}}</div>
+                  <div class="dCell" style="text-align:right;"
+                    v-if="(folioUpdate && !folioItem.ispayment && (selectedFolioItemToEdit && selectedFolioItemToEdit.ItemId == folioItem.ItemId)) && showDefaultAmount && !folioItem.IsNewadded && !folioItem.IsVoided">
+                    <input
+                      :class="{folioEditOnfocus: selectedFolioItemToEdit.ActualTaxAmount != folioItem.ActualTaxAmount}"
+                      :disabled="fncIsFolioUpdate && (fncIsFolioUpdate.isAssigned === -1 && fncIsFolioUpdate.functionState === 2)"
+                      v-if="fncIsFolioUpdate && (fncIsFolioUpdate.isAssigned === 1 || (fncIsFolioUpdate.isAssigned === -1 && fncIsFolioUpdate.functionState === 2)) "
+                      class="form-control" style="text-align: right" type="text"
+                      v-model="selectedFolioItemToEdit.ActualTaxAmount">
+                  </div>
+  
+                  <div class="dCell" style="text-align:right" v-else>{{formatMoney(folioItem.TaxAmount)}}</div>
+                  <!-- <div class="dCell" style="text-align:right" v-if="folioItem.editable">
+                    <input type="text" v-model="folioItem.TaxAmount">
+                  </div> -->
+  
+                  <div class="dCell" style="text-align:right">{{formatMoney(folioItem.Total)}}</div>
+                  <!-- <div class="dCell" style="text-align:right" v-if="folioItem.editable">
+                    <input type="text" v-model="folioItem.Total">
+                  </div> -->
+                </div>
+
+
+
+                <!-- New Add Master Folio Item -->
+                <div class="dTBodyRow" v-show="ShowDropdown"
+                  v-if="selectedLedger && showPreviewButton && !showRatePlanSave">
+                  <!-- <div class="dCell">
+                    <button @click="expandPreview" class="btn btn-primary addItemPreview"><i
+                        class="fal fa-long-arrow-down"></i></button>
+                  </div> -->
+                  <div class="dCell">
+                    <label class="checkLabel" >
+                      <input style="cursor: pointer;" type="checkbox" v-model="isChecked"/>                        
+                    </label>  
+                  </div>
+                  <div class="dCell" @click="scrollDown(folioItemsDetails.length)">
+                    <datePickerComponent                      
+                      :value="selectedLedger.dateEffective" :onUpdate="updateFolioEffectiveDate" format="DD MMM YYYY"
+                      sourceFormat="'YYYY-MM-DD'" defaultValue="today" :pickerType="'date'"
+                      :objectPassedToParent="selectedLedger"></datePickerComponent>
+                      <!-- :disabled="fncIsFolioUpdate && (fncIsFolioUpdate.isAssigned === -1 && fncIsFolioUpdate.functionState === 2)"
+                      v-if="fncIsFolioUpdate && (fncIsFolioUpdate.isAssigned === 1 || (fncIsFolioUpdate.isAssigned === -1 && fncIsFolioUpdate.functionState === 2)) " -->
+                  </div>
+                  <div class="dCell">
+                    <select class="form-control" 
+                      v-validate="'required'" v-model="selectedLedger.ledgerAccountId">
+                      <option v-for="LedgerItem in LedgerAcounts" v-bind:value="LedgerItem.ledgerAccountID">
+                        {{LedgerItem.ledgerAccountName}}</option>
+                    </select>
+                    <!-- v-focus="focused" @focus="focused = true" @blur="focused = false" -->
+                  </div>
+                  <div class="dCell" style="text-align:right">
+                    <input class="form-control" ref="ledger" type="text" v-model="selectedLedger.defaultAmount"
+                      v-if="!showDefaultAmount" style="text-align: right">
+                  </div>
+                  <div class="dCell tax" style="text-align:right">
+                    <input class="form-control" ref="ledger" type="text" v-model="selectedLedger.TaxAmount"
+                      v-if="showDefaultAmount" style="text-align: right">
+                  </div>
+                  <div class="dCell" style="text-align:right" v-if="!showDefaultAmount">
+                    <input class="form-control" type="text" v-model="selectedLedger.defaultAmount"
+                      style="text-align: right">
+                  </div>
+                  <div class="dCell" style="text-align:right" v-if="showDefaultAmount">
+                    <input class="form-control" type="text" v-model="selectedLedger.TaxAmount" style="text-align: right">
+                  </div>
+                </div>
+                <div class="dTBodyRow" v-show="ShowDropdown">
+                  <div class="dCell" style="align-items: flex-end;
+                    flex-wrap: nowrap;
+                    flex-direction: row-reverse;">
+                  </div>
+  
+                </div>
+
+
+              </div>
+
+              <div class="dTBody folioFooter" style="overflow: visible">
+                <div class="dTBodyRow">
+                  <div class="dCell" style="font-weight:bold;max-width: 12%;">Subtotal:</div>
+                  <div class="dCell" style="font-weight:bold;min-width: 12%;"></div>
+                  <div class="dCell" style="font-weight:bold;min-width: 12%;">&nbsp;</div>
+                  <div class="dCell" style="text-align:right">
+                   {{formatMoney(folioCharges.TotalFolio)}}                   
+                  </div>
+                  <div class="dCell" style="text-align:right" >
+                    {{ formatMoney(folioCharges.TotalTax)}}</div>                    
+                  <div class="dCell" style="text-align:right; padding-right: 19px">
+                    {{formatMoney(folioCharges.TotalValue)}}</div>
+                    
+                </div>
+              </div>
+
+            </div>
+            <div class=" pull-left noClear ml-3 mt-1">
+              <label style="float:left;     margin: 4px 12px 0 0; font-size: 12px; color: #555555;">Show Void Items
+              </label>
+              <label class="slideCheck">
+                <input type="checkbox" v-model="displayVoidItems">
+                <span></span>
+              </label>
+            </div>
+  
+            <!-- <div class=" pull-left noClear ml-3 mt-1">
+              <label style="float:left;     margin: 4px 12px 0 0; font-size: 12px; color: #555555;">Tax Exempt</label>
+              <label class="slideCheck">
+                <input type="checkbox" @change="SaveTaxExemptForReservation">
+                <span></span>
+              </label>
+            </div> -->
+              <!-- v-model="folioCharges.IsTaxExempt" -->
+            
+            <div v-if="!masterFolioList.filter(folioItem => folioItem.IsVoided === 1).length && displayVoidItems" class="pull-left noClear ml-3 mt-1 errorMsg">
+              <label>No void items to show</label>
+            </div>
+
+
+          </div>
+
+
+          <!-- Corporate Ledger Payments -->
+          <div class="editContinerHeading" @click="getPaymentsDetail" :class="isFolioListVisible ? 'disableDisplaySection' : ''">          
+          <span class="mt-2">
+            <i v-if="showPayments" class="fa fa-chevron-down mr-2"></i>
+            <i v-if="!showPayments" class="fa fa-chevron-right mr-2"></i>
+            <span v-if="!showPayments && Object.keys(paymentDetails).length == 0">No payments</span>
+            <span
+              v-else-if="!showPayments && Object.keys(paymentDetails).length !== 0 && Object.keys(paymentDetails).length > 1">{{Object.keys(paymentDetails).length}}
+              Payments
+            </span>
+            <span v-else>{{Object.keys(paymentDetails).length}} Payment</span>
+            <button type="button" class="btn btn-primary btn-sm ml-2" @click="addPayment" v-if="!showAddPaymentDetail" :disabled="!totalBalanceTransfer">            
+              <i class="fa fa-plus"></i>Add Payment               
+            </button>
+            <button type="button" class="btn btn-blank-danger btn-sm" @click="cancelPayment"
+              v-if="showAddPaymentDetail">Cancel</button>
+            <button type="button" class="btn btn-success btn-sm" @click="makePayment" 
+              v-if="showAddPaymentDetail">{{buttonName}}</button>
+              <!-- :disabled="disableMultiProcess" -->
+          </span>
+          <span v-if="PaymentMode == 'Test Mode'"
+            style="color:red; margin-left: calc(25% - 10%);">{{PaymentMode}}</span>
+          <span v-else style="color:green;margin-left: 150px">{{PaymentMode}}</span>
+          <!-- <span v-if="folioCharges && folioCharges.Payments !== null"
+            class="totalNumeric totalItems pull-right paymentNumeric" style="font-weight: 600 !important;font-size: 16px !important;">{{'$ ' + folioCharges.Payments}}</span> -->
+          </div>      
+        
+      
+        
+        <!-- Payment Details -->
+        <div class="editPaymentList disableDisplaySection"        
+        v-if="!showPaymentDetails"
+        v-show="showPayments" style="padding: 15px; background: #f9faff" :class="isFolioListVisible ? 'disableDisplaySection' : ''">
+        <!-- :disabled="fncIsPaymentView && (fncIsPaymentView.isAssigned === -1 && fncIsPaymentView.functionState === 2)" -->
+        <div v-if="pendingPaymentDetails.length > 0 || Object.keys(paymentDetails).length > 0">
+          <div class="paymentProcessesList">
+            <div class="head">
+              <div class="pplRow">
+                <div class="cell dt">DATE</div>
+                <div class="cell pm">Payment Method</div>
+                <div class="cell ts">Transaction</div>
+
+                <div class="cell amt">AMOUNT</div>
+              </div>
+            </div>
+            <div class="body">
+              <div class="pdWrap" v-for="(payment,index) in paymentDetails">
+                <div class="pplRow">
+                  <div class="cell dt">
+                    <div class="expRow">
+                      <!-- v-if="payment.PendingchildPaymentitems && payment.PendingchildPaymentitems.length > 0" -->
+                      <span
+                        v-if="!payment.showChildPaymentDetails && (payment.childPaymentDetails.length > 0 || (payment.PendingchildPaymentitems && payment.PendingchildPaymentitems.length > 0))"
+                        @click="showChildPaymentItems(payment)">
+                        <i class="fa fa-plus"></i>
+                      </span>
+                      <span
+                        v-if="payment.showChildPaymentDetails && (payment.childPaymentDetails.length > 0 || (payment.PendingchildPaymentitems && payment.PendingchildPaymentitems.length > 0))"
+                        @click="hideChildPaymentItems(payment)">
+                        <i class="fa fa-minus"></i>
+                      </span>
+                    </div>{{formatUTCDate(payment.parentPaymentDetails.PaymentDate)}}
+                  </div>
+                  <div class="cell pm">
+
+
+                    <span v-if="payment.parentPaymentDetails.isManualMode" class="PaymentType">M</span>
+                    <!-- <span class="stripe-icon" v-else></span> -->
+                    <span :class="{'slimcd-icon' : payment.parentPaymentDetails.GatewayId == 2, 'stripe-icon' : payment.parentPaymentDetails.GatewayId == 1}" v-else></span>
+
+                    <span
+                      v-if="payment.parentPaymentDetails.CCLast4Digits !== null">{{'****-' + payment.parentPaymentDetails.CCLast4Digits}}</span>
+                    <span class="pm-info" v-bind:title="payment.parentPaymentDetails.CardType"
+                      v-else>{{payment.parentPaymentDetails.CardType}}</span>
+                    <span v-if="payment.parentPaymentDetails.CardType"
+                      :class="['cardType', payment.parentPaymentDetails.CardType]"></span>
+                  </div>
+                  <div class="cell ts">
+                    <span>{{payment.parentPaymentDetails.PaymentStatusName}}</span>
+                    <span>
+                      <i v-if="payment.parentPaymentDetails.gatewayResponseData && payment.parentPaymentDetails.CardType != 'Cash' && (fncIsPaymentTransaction && (fncIsPaymentTransaction.isAssigned === 1 || (fncIsPaymentTransaction.isAssigned === -1 && fncIsPaymentTransaction.functionState === 2)))"
+                        style="margin-left: 3px; color: #8c8c8c; cursor: pointer;" class="far fa-info-circle"
+                        :class="payment.parentPaymentDetails.PaymentStatusID == 3 ? 'faliedTransaction' : ''"
+                        @click="showTransactionData(payment.parentPaymentDetails.gatewayResponseData)"></i>
+                    </span>
+                    <!-- <div v-if="payment.parentPaymentDetails.showGatewayResponseData">{{payment.parentPaymentDetails.gatewayResponseData}}</div> -->
+                    <label class="processesLink"
+                      :disabled="disableAddOrUpdate(payment.parentPaymentDetails.NextPaymentStatusId)"
+                      v-if="addOrUpdate(payment.parentPaymentDetails.NextPaymentStatusId) && showNextProcessButton && payment.parentPaymentDetails.NextPaymentStatusName"
+                      @click="addPendingchildPaymentitems(payment,'NextPaymentStatus','parent')"
+                      style="cursor: pointer;">{{payment.parentPaymentDetails.NextPaymentStatusName}}</label>
+                    <label class="processesLink"
+                      :disabled="fncIsPaymentUpdate && (fncIsPaymentUpdate.isAssigned === -1 && fncIsPaymentUpdate.functionState === 2)"
+                      v-if="(fncIsPaymentUpdate && (fncIsPaymentUpdate.isAssigned === 1 || (fncIsPaymentUpdate.isAssigned === -1 && fncIsPaymentUpdate.functionState === 2))) && showNextProcessButton && payment.parentPaymentDetails.NextPaymentStatusName2"
+                      @click="addPendingchildPaymentitems(payment,'NextPaymentStatus2','parent')"
+                      style="cursor: pointer;">Release</label>
+                  </div>
+                  <!-- <div class="cell dt">{{formatDate(payment.parentPaymentDetails.PaymentDate)}}</div> -->
+                  <div class="cell amt">{{formatMoney(payment.parentPaymentDetails.Amount)}}</div>
+                </div>
+                <div class="pplRow subRow" v-for="childPayment in payment.childPaymentDetails"
+                  v-if="payment.showChildPaymentDetails">
+                  <div class="cell empty blank">
+                    <span></span>&nbsp;</div>
+                  <div class="cell dt">{{formatUTCDate(childPayment.PaymentDate)}}</div>
+                  <div class="cell empty">
+                    <span></span>&nbsp;</div>
+                  <div class="cell ts">
+                    <span>{{childPayment.PaymentStatusName}}</span>
+                    <span>
+                      <i v-if="childPayment.gatewayResponseData && childPayment.CardType != 'Cash' && (fncIsPaymentTransaction && (fncIsPaymentTransaction.isAssigned === 1 || (fncIsPaymentTransaction.isAssigned === -1 && fncIsPaymentTransaction.functionState === 2)))"
+                        :class="childPayment.PaymentStatusID == 3 ? 'faliedTransaction' : ''"
+                        class="far fa-info-circle" style="margin-left: 3px; color: #8c8c8c; cursor: pointer;"
+                        @click="showTransactionData(childPayment.gatewayResponseData)"></i>
+                    </span>
+                    <label class="processesLink" :disabled="disableAddOrUpdate(childPayment.NextPaymentStatusId)"
+                      v-if="addOrUpdate(childPayment.NextPaymentStatusId) && showNextProcessButton && childPayment.NextPaymentStatusName"
+                      @click="addPendingchildPaymentitems(payment,'NextPaymentStatus','child',childPayment)"
+                      style="cursor: pointer;">{{childPayment.NextPaymentStatusName}}</label>
+                    <label class="processesLink"
+                      :disabled="fncIsPaymentUpdate && (fncIsPaymentUpdate.isAssigned === -1 && fncIsPaymentUpdate.functionState === 2)"
+                      v-if="(fncIsPaymentUpdate && (fncIsPaymentUpdate.isAssigned === 1 || (fncIsPaymentUpdate.isAssigned === -1 && fncIsPaymentUpdate.functionState === 2))) && showNextProcessButton && childPayment.NextPaymentStatusName2"
+                      @click="addPendingchildPaymentitems(payment,'NextPaymentStatus2','child',childPayment)"
+                      style="cursor: pointer;">{{childPayment.NextPaymentStatusName2}}</label>
+                  </div>
+                  <!-- <div class="cell dt">{{formatDate(childPayment.PaymentDate)}}</div> -->
+                  <div class="cell amt">{{formatMoney(childPayment.Amount)}}</div>
+                </div>
+                <div class="pplRow subRow" v-for="childPaymentitem in payment.PendingchildPaymentitems"
+                  v-if="payment.showChildPaymentDetails">
+                  <div class="cell empty blank">
+                    <span></span>&nbsp;</div>
+                  <div class="cell dt">{{formatUTCDate(childPaymentitem.PaymentDate)}}</div>
+                  <div class="cell empty">
+                    <span></span>&nbsp;</div>
+                  <div class="cell ts">
+                    <span v-if="childPaymentitem.NextProcess">{{childPaymentitem.NextPaymentStatusName}}</span>
+                    <span v-else>{{childPaymentitem.NextPaymentStatusName2}}</span>
+                  </div>
+                  <!-- <div class="cell dt">{{formatDate(childPaymentitem.PaymentDate)}}</div> -->
+                  <div class="cell amt child-input-icon"> 
+                    <span v-if="!childPaymentitem.NextProcess">{{formatMoney(childPaymentitem.BalanceAmount)}}</span>
+                    <input v-else style="text-align:right; padding: 3px 5px; height: unset; margin-right: -3px;"
+                      type="text" v-model="childPaymentitem.BalanceAmount" class="form-control" />
+                     <i v-if="childPaymentitem.NextProcess" :class="!childPaymentitem.NextProcess && 'child-icon-release'" style="font-size: 13px;position: absolute;top: 48%;width: 20px;">$</i>
+                  </div>
+                </div>
+              </div>
+               <!-- Pending Payments -->
+               <div class="pdWrap" v-for="payment in pendingPaymentDetails">
+                <div class="pplRow">
+                  <div class="cell dt">
+                    <datePickerComponent :keyString="'fromDate'" v-model="payment.dateEffective"
+                      :value="payment.dateEffective" class="checkInDate" :format="'DD MMM YYYY'"
+                      :onUpdate="updatePaymentDate" :pickerType="'date'"
+                      v-if="selectedPaymentCardDetails && !selectedPaymentCardDetails.CCLast4Digits">
+                    </datePickerComponent>
+                    <span class="" style="margin-left: 30px; top: 10px; position: relative;" v-else>{{getTodayDate()}}</span>
+                  </div>
+                  <div class="cell pm">
+                    <div class="dropdown pull-left paymentDropDown">
+                      <button class="btn btn-default btn-sm dropdown-toggle  pull-left paymentInfo"
+                        data-toggle="dropdown"
+                        >
+                        <span
+                          v-if="selectedPaymentCardDetails && selectedPaymentCardDetails.CCLast4Digits">{{'****-' + selectedPaymentCardDetails.CCLast4Digits}}
+                        </span>
+                        <span v-if="selectedPaymentCardDetails && selectedPaymentCardDetails.CCLast4Digits "
+                          :class="['cardType',selectedPaymentCardDetails.CardType]"></span>&nbsp;
+                        <span class="cardLedgerInfo" :title="selectedPaymentCardDetails.PaymentInfoId"
+                          v-if="selectedPaymentCardDetails && !selectedPaymentCardDetails.CCLast4Digits && selectedPaymentCardDetails.PaymentInfoId ">{{selectedPaymentCardDetails.PaymentInfoId}}</span>&nbsp;
+                        <span v-if="!selectedPaymentCardDetails" title="Select payment">Select payment</span>
+                        <i class="fas fa-caret-down"></i>
+                      </button>
+                      <ul class="dropdown-menu">
+                        <li v-for="payment in paymentLedgerAcounts" v-if="payment.IsCreditcard == false">
+                          <div class="cardInfoSec" @click="selectPaymentDetails(payment,'manual')">
+                            <span>{{payment.PaymentMethod}}</span>
+                            <br>
+                          </div>
+                        </li>
+                        <li v-for="cardInfo in guestPaymentCards">
+                          <div class="cardInfoSec" @click="selectPaymentDetails(cardInfo,'notmanual')">
+                            <span v-text="cardInfo.NameOnCard"></span>
+                            <br>
+                            <span>{{'**** **** **** ' +cardInfo.CCLast4Digits}}</span>
+                            <span :class="['cardType',cardInfo.CardType]"></span>
+                          </div>
+                          <button @click="viewCurrentCardDetails(cardInfo)" v-if="false">
+                            <i class="far fa-pen"></i>
+                          </button>
+                        </li>
+                        <li style="padding:15px;" v-if="guestPaymentCards.length == 0"
+                          @click="addPaymentDetails(true)">Add Payment Options</li>
+                      </ul>
+                    </div>
+                  </div>
+
+                  <div class="cell ts" v-if="selectedPaymentCardDetails && selectedPaymentCardDetails.CCLast4Digits">
+                    <select class="form-control" v-model="paymentProcessMethod">
+                      <option value="null">Select Transaction</option>
+                      <option v-for="paymentProcess in paymentProcessList" :value="paymentProcess.PaymentStatusID">
+                        {{paymentProcess.PaymentStatusName}}</option>
+                    </select>
+                  </div>
+                  <div class="cell ts"
+                    v-else-if="selectedPaymentCardDetails && selectedPaymentCardDetails.PaymentInfoId">
+                    <span style="line-height: 40px;">{{selectedPaymentCardDetails.PaymentInfoId}}</span>
+                  </div>
+                  <div class="cell ts" v-else></div>
+                  
+                  <div class="cell amt input-icon">
+                    <i style="position: absolute;top: 57%;width: 15px;font-size: 13px;">$</i>  
+                    <input style="text-align:right" type="text" v-model="payment.Amount" class="form-control in-text" />
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+        <span v-if="paymentCharges && paymentCharges.TotalAmount !== null"
+        class="totalNumeric totalItems pull-right paymentTotal">
+        <span>
+          <span>
+            <i v-if="isAccountConflict == 1" class="fa fa-circle" style="color:#ff9b00; margin-right: 5px;"
+              aria-hidden="true"></i>
+          </span>Total: {{formatMoney(paymentCharges.TotalAmount)}}
+        </span>
+        </span>
+        </div>
+
+
+        <!-- Balance Transfer Section -->
+        <div class="editContinerHeading click disableDisplaySection" @click="getBalananceTransferInvoiceDetails" >         
+          <span class="mt-2">
+            <i v-if="showBTInvoice" class="fa fa-chevron-down mr-2"></i>
+            <i v-if="!showBTInvoice" class="fa fa-chevron-right mr-2"></i>
+            <span>0 Transfers</span>
+            <button type="button" class="btn btn-primary btn-sm ml-2" disabled><i class="fa fa-plus"></i> Add Transfer</button>
+            
+          </span>
+          <span 
+          class="totalNumeric totalItems pull-right paymentNumeric" style="font-weight: 600 !important;font-size: 16px !important;">{{formatMoney(0)}}</span>
+          </div>
+        </section>
+        
+      </div>
+      
+    </div>
+    <div class="modal fade invoice" id="invoiceToBePrinted" role="dialog" style="display: none" >
+      <invoicePopupComponent parentComp="guestProfile" :selectedInvoiceObj="selectedInvoiceObj" :guestInfo="guestData" :additionalEmails="guestEmails" :balanceTransferDetails="balanceTransferInvoiceDetails" :roomInfo="roomInfo" :emailList="emailList"
+      :folioItemsDetails="masterFolioList" :Reservation_Status="reservationStatus" :getTotalAmount="getTotalAmount" :totalAmountVal="totalAmountVal" :totalBalanceTransfer="totalBalanceTransfer" :totalTaxVal="totalTaxVal"
+      :corporateDetails="guestInfo" :corporateEmail="additionalEmails" :corporatePhoneNo="additionalPhoneNumbers" :companyProfileId="GuestProfileId" :clientId="clientId" :isMasterFolioAvailable="isMasterFolioAvailable"/>
+    </div>
+    <reservationSummaryPanel :reservationObj="currResObj" :parentCallback="panelCallback"></reservationSummaryPanel>
+
+    <div id="app" class="folioSurchage balanceTransferPopup folioSettingsPopup">
+      <folioSettingModal v-show="showSettingModal" :params="modalParams" />
+    </div>
+    <div id="app" class="folioSurchage">
+      <foliomodal v-show="isModalVisible" @close="closepopup" :params="modalParams" />
+    </div>
+  </div>
+    

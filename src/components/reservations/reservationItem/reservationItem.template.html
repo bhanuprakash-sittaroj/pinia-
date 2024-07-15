@@ -1,0 +1,114 @@
+<div class="dTBodyRow">
+  <div class="dCell Actions" v-if="headerColumnList.Actions.IsChecked">
+    <div>
+      <button :disabled="!checkOutbutton" v-if="resDeatil.isCheckOut && resDeatil.isCheckOut == 1 && resDeatil.IsActionEnable == 1"
+        class="btn btn-default check-out-icon" @click="changeStatus(resDeatil)" title="Check-Out"></button>
+      <button :disabled="!checkOutbutton" v-if="resDeatil.isCheckIn && resDeatil.isCheckIn == 1 && resDeatil.IsActionEnable == 1"
+        class="btn btn-default check-in-icon" @click="changeStatus(resDeatil)" title="Check-In"></button>
+      <span v-else></span>
+    </div>
+  </div>
+  <div class="dCell Status" v-if="headerColumnList.Status.IsChecked" @click="showReservationSummaryPanel(resDeatil)">
+    <div class="statusTypeDiv">
+      <span class="statusType" v-bind:class="resDeatil.StatusName">{{resDeatil.StatusName}}</span>
+    </div>
+    <span class="source" v-bind:class="resDeatil.SubSourceName" v-if="resDeatil.SubSourceName && resDeatil.SubSourceName !== null">
+      <strong class="sm">{{resDeatil.SubSourceName}}</strong>
+    </span>
+    <span v-else class="source" v-bind:class="resDeatil.SourceName">
+      <strong class="sm">{{resDeatil.SourceName}}</strong>
+    </span>
+  </div>
+  <div class="dCell" v-if="headerColumnList.GuestName.IsChecked" @click="showReservationSummaryPanel(resDeatil)">
+    <strong v-bind:title="resDeatil.GuestFirstName + resDeatil.GuestLastName" style="width:200px; float:left; white-space: nowrap; text-overflow:ellipsis; overflow: hidden">{{resDeatil.GuestFullName}}</strong>
+    <div class="persons" style="margin-top: 4px;">
+      <span v-if="resDeatil.Persons === null && resDeatil.NumberOfAdults !== null">{{resDeatil.NumberOfAdults}}</span>
+      <span v-if="resDeatil.Persons === null && resDeatil.NumberOfAdults === 1">Adult</span>
+      <span v-else-if="resDeatil.Persons === null && resDeatil.NumberOfAdults !== 1">Adults</span>
+      <span v-if="resDeatil.Persons === null">,</span>
+      <span v-if="resDeatil.Persons === null && resDeatil.NumberOfChildren !== null">{{resDeatil.NumberOfChildren}}</span>
+      <span v-if="resDeatil.Persons === null && resDeatil.NumberOfChildren === 1">Child</span>
+      <span v-else-if="resDeatil.Persons === null && resDeatil.NumberOfChildren !== 1">Children</span>
+      <span v-else-if="resDeatil.Persons !== null">{{resDeatil.Persons}}</span>
+      <span v-if="resDeatil.Persons !== null && resDeatil.Persons === 1">Person</span>
+      <span v-else-if="resDeatil.Persons !== null && resDeatil.Persons !== 1">Persons</span>
+    </div>
+  </div>
+  <div class="dCell Stay" v-if="headerColumnList.StartDate.IsChecked" @click="showReservationSummaryPanel(resDeatil)">
+    <div class="dates">
+      <strong>{{formatStartDate(resDeatil.originalStartDate)}}</strong>
+      <strong>{{formatEndDate(resDeatil.originalEndDate)}}</strong>
+    </div>
+
+
+    <div style="position: relative; margin-top: 7px;">
+      <span style="position: absolute;" v-if="formatStartYear(resDeatil.originalStartDate) != null">{{formatStartYear(resDeatil.originalStartDate)}}</span>
+      <span v-if="resDeatil.Nights > 1" style="width: 130px; float: left; text-align: right; font-size: 13px; margin-top: 0px; margin-left: 9px;">{{resDeatil.Nights + ' Nights'}}
+      </span>
+      <span v-else style="width: 130px; float: left; text-align: right; font-size: 13px; margin-left: 9px;">{{resDeatil.Nights + ' Night'}}
+      </span>
+    </div>
+  </div>
+  <div class="dCell Date Booked" v-if="headerColumnList.BookedBy.IsChecked" @click="showReservationSummaryPanel(resDeatil)">
+    <strong v-if="resDeatil.DateBooked && resDeatil.DateBooked != null && resDeatil.DateBooked != ''">{{formatDateBooked(resDeatil.DateBooked)}}
+      <span>{{formatYear(resDeatil.DateBooked)}}</span>
+    </strong>
+    <span v-bind:title="resDeatil.BookedBy" v-bind:class="resDeatil.BookedBy" v-if="resDeatil.BookedBy && resDeatil.BookedBy != null && resDeatil.BookedBy != ''"
+      style="width: 120px; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; margin-top: 7px;">{{resDeatil.BookedBy}}</span>
+
+  </div>
+  <div class="dCell Unit" v-if="headerColumnList.Unit.IsChecked" @click="showReservationSummaryPanel(resDeatil)">
+    <div class="UnitClassDiv">
+      <span v-if="isHostMode && isHostMode[0] && isHostMode[0].IsHostMode == true" class="UnitClass" v-bind:class="resDeatil.ListColourcode">{{resDeatil.UnitClassName}}</span>
+      <span v-else-if="isHostMode && isHostMode[0] && isHostMode[0].IsHostMode == false" class="UnitClass" v-bind:class="resDeatil.ListColourcode">{{resDeatil.UnitTypeName}}</span>
+      <!-- <span class="UnitClass" v-bind:class="resDeatil.ListColourcode">{{resDeatil.UnitClassName}}</span> -->
+    </div>
+    <span style="width: auto; white-space: nowrap; text-overflow: ellipsis; overflow: hidden;">
+      <span  v-if="resDeatil.Oversell" class="reslist-unallocate"> 
+        <!-- <button  disabled type="button" class="btn btn-sm detailBtn unallocate ">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 26 26" width="26" height="26" fill="#000000">
+<path d="M 12.84375 1 C 12.722656 1.019531 12.605469 1.0625 12.5 1.125 L 0.5 8.125 C 0.1875 8.304688 -0.00390625 8.640625 0 9 L 0 23 C 0 23.550781 0.449219 24 1 24 L 25 24 C 25.550781 24 26 23.550781 26 23 L 26 9 C 26.003906 8.640625 25.8125 8.304688 25.5 8.125 L 13.5 1.125 C 13.300781 1.007813 13.070313 0.964844 12.84375 1 Z M 13 3.15625 L 24 9.59375 L 24 22 L 2 22 L 2 9.59375 Z M 8.5 10 C 7.121094 10 6 11.121094 6 12.5 C 6 13.878906 7.121094 15 8.5 15 C 9.878906 15 11 13.878906 11 12.5 C 11 11.121094 9.878906 10 8.5 10 Z M 17.5 10 C 16.121094 10 15 11.121094 15 12.5 C 15 13.878906 16.121094 15 17.5 15 C 18.878906 15 20 13.878906 20 12.5 C 20 11.121094 18.878906 10 17.5 10 Z M 6.6875 15.5 C 5.585938 15.800781 4 17 4 19 L 13 19 C 13 17 11.414063 15.800781 10.3125 15.5 C 9.8125 15.800781 9.199219 16 8.5 16 C 7.800781 16 7.1875 15.800781 6.6875 15.5 Z M 13 19 L 22 19 C 22 17 20.414063 15.800781 19.3125 15.5 C 18.8125 15.800781 18.199219 16 17.5 16 C 16.800781 16 16.1875 15.800781 15.6875 15.5 C 14.585938 15.800781 13 17 13 19 Z"/>
+      </svg>
+        <svg class="line" x="0px" y="0px" viewBox="0 0 512 512" style="enable-background:new 0 0 512 512;"
+          xml:space="preserve">
+          <g>
+            <path d="M500.364,267.636H11.636C5.21,267.636,0,262.427,0,256c0-6.427,5.21-11.636,11.636-11.636h488.727
+      c6.427,0,11.636,5.21,11.636,11.636C512,262.427,506.79,267.636,500.364,267.636z" />
+          </g>
+        </svg>
+       
+      </button> -->
+      <button v-if="resDeatil.StatusName != 'Inquiry'" disabled type="button" class="btn btn-sm detailBtn unallocate" :title="resDeatil.Oversell == true ? 'Unallocated' : 'Unallocate'">
+      <span class="unallocateImg"></span>
+      <!-- <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 26 26" width="26" height="26" fill="#000000">
+        <path d="M 12.84375 1 C 12.722656 1.019531 12.605469 1.0625 12.5 1.125 L 0.5 8.125 C 0.1875 8.304688 -0.00390625 8.640625 0 9 L 0 23 C 0 23.550781 0.449219 24 1 24 L 25 24 C 25.550781 24 26 23.550781 26 23 L 26 9 C 26.003906 8.640625 25.8125 8.304688 25.5 8.125 L 13.5 1.125 C 13.300781 1.007813 13.070313 0.964844 12.84375 1 Z M 13 3.15625 L 24 9.59375 L 24 22 L 2 22 L 2 9.59375 Z M 8.5 10 C 7.121094 10 6 11.121094 6 12.5 C 6 13.878906 7.121094 15 8.5 15 C 9.878906 15 11 13.878906 11 12.5 C 11 11.121094 9.878906 10 8.5 10 Z M 17.5 10 C 16.121094 10 15 11.121094 15 12.5 C 15 13.878906 16.121094 15 17.5 15 C 18.878906 15 20 13.878906 20 12.5 C 20 11.121094 18.878906 10 17.5 10 Z M 6.6875 15.5 C 5.585938 15.800781 4 17 4 19 L 13 19 C 13 17 11.414063 15.800781 10.3125 15.5 C 9.8125 15.800781 9.199219 16 8.5 16 C 7.800781 16 7.1875 15.800781 6.6875 15.5 Z M 13 19 L 22 19 C 22 17 20.414063 15.800781 19.3125 15.5 C 18.8125 15.800781 18.199219 16 17.5 16 C 16.800781 16 16.1875 15.800781 15.6875 15.5 C 14.585938 15.800781 13 17 13 19 Z"/>
+      </svg> -->
+    </button>
+    </span>
+    <span v-bind:title="resDeatil.UnitNickName"  class="UnitClassFont sm" v-if="resDeatil.PropertyNickName && resDeatil.UnitNickName && resDeatil.PropertyNickName !== null && resDeatil.UnitNickName !== null"  >{{resDeatil.PropertyNickName}} - {{resDeatil.UnitNickName}}</span>
+    <span v-bind:title="resDeatil.UnitName" class="UnitClassFont sm" v-else  >{{resDeatil.PropertyName}} - {{resDeatil.UnitName}}</span>
+    </span>    
+
+  </div>
+
+  <!-- <div class="dCell Amount" v-if ="headerColumnList.Amount.IsChecked"
+      @click="showReservationSummaryPanel(resDeatil)"> -->
+  <div class="dCell Amount" :disabled="fncIsFolioView && (fncIsFolioView.isAssigned === -1 && fncIsFolioView.functionState === 2)"
+    v-if="fncIsFolioView && (fncIsFolioView.isAssigned === 1 || (fncIsFolioView.isAssigned === -1 && fncIsFolioView.functionState === 2)) && headerColumnList.Amount.IsChecked"
+    @click="showReservationSummaryPanel(resDeatil)">
+    <ul>
+      <li>
+        <strong  v-text="formatMoney(resDeatil.BalanceRate)"
+          class="dueAmount" :class="[resDeatil.BalanceRate > 0 ? 'positiveBalance' : resDeatil.BalanceRate < 0 ? 'negativeBalance': 'zeroBalance']"></strong>
+      </li>
+      <!-- <li>
+        <strong v-if="(resDeatil.BalanceRate !== resDeatil.TotalRate) && resDeatil.BalanceRate !== null" v-text="formatMoney(resDeatil.BalanceRate)"
+          class="payAmount"></strong>
+      </li> -->
+      <li>
+        <strong v-if="resDeatil.TotalRate !== null" v-text="formatMoney(resDeatil.TotalRate)" class="totalAmount"></strong>
+      </li>
+    </ul>
+  </div>
+
+</div>

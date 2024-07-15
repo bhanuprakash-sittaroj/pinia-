@@ -1,0 +1,76 @@
+<div class="gp-list-row" >
+    <div class="dTBodyRow" >
+
+        <div class="dCell gp-actions-cell">
+            <button title="New Reservation" class="btn btn-default gp-new-res-btn" :disabled="guestDetail.StatusName != 'Active'" @click="guestDetail.StatusName != 'Active' ? '' : createReservationWithThisGuest(guestDetail)">
+                <i class="fas fa-bed"></i>
+                <span class="gp-plus-btn"><i class="far fa-plus"></i></span>
+            </button>
+        </div>
+
+        <div class="dCell gp-name-cell" @click="createNewInstance(guestDetail)"><strong :title="formattedTitle">{{guestDetail.GuestFirstName}} {{guestDetail.GuestLastName}}</strong>
+            <div>
+               
+                <div v-if="guestDetail.CountryName && guestDetail.CountryName != ''">
+                    <span v-if="guestDetail.CountryName == 'United States'"><span v-if="guestDetail.CityName">{{guestDetail.CityName}}{{guestDetail.CityName && guestDetail.StateName ? ', ' + guestDetail.StateName : guestDetail.StateName}}</span></span>
+                    <span v-else="">{{guestDetail.CountryName}}</span>
+                </div>
+                <div v-else>
+                    <span v-if="guestDetail.CityName">{{guestDetail.CityName}}{{guestDetail.CityName && guestDetail.StateName ? ', ' + guestDetail.StateName : guestDetail.StateName}}</span><span v-else-if="guestDetail.StateName">{{guestDetail.StateName}}</span><span v-else></span>
+                </div>
+                <span>{{guestDetail.AccountType == 3 ? 'Guest':'Company'}}</span>
+            </div>       
+        </div>
+        <div class="dCell gp-source-cell" @click="createNewInstance(guestDetail)">
+            <span class="resDetailSource" v-bind:class="(guestDetail.SubSourceName && guestDetail.SubSourceName != '' && guestDetail.SubSourceName != null) ? guestDetail.SubSourceName : (guestDetail.SourceName && guestDetail.SourceName !='' && guestDetail.SourceName != null) ? guestDetail.SourceName : ''">
+            </span>
+            <span>{{formatDate(guestDetail.BookedOnDate)}}</span>
+        </div>
+        
+        
+
+        <div class="dCell gp-history-cell" @click="createNewInstance(guestDetail)">
+            <strong>{{formatMoney(guestDetail.Revenue)}}</strong>
+            <span>{{guestDetail.Stays ? guestDetail.Stays : '0'}} {{guestDetail.Stays > 1 || guestDetail.Stays == null || guestDetail.Stays == 0 ? 'Bookings' : guestDetail.Stays == 1 ? 'Booking' : ''}}</span>
+        </div>
+
+        <div class="dCell gp-laststay-cell" @click="createNewInstance(guestDetail)">
+            <strong>{{formatDate(guestDetail.LastArrivalDate)}}</strong>
+            <span>{{guestDetail.LastPropertyNickName}}-{{guestDetail.LastUnitNickName}}</span>
+        </div>
+        <div class="dCell gp-nextstay-cell" @click="createNewInstance(guestDetail)">
+            <strong>{{formatDate(guestDetail.NextArrivalDate)}}</strong>
+            <span>{{guestDetail.NextPropertyNickName}}-{{guestDetail.NextUnitNickName}}</span>
+        </div>
+        
+        <div class="dCell gp-amount-cell" v-if="guestDetail.AccountType != 3" @click="createNewInstance(guestDetail)">       
+            <ul>
+                <li>
+                  <strong  v-text="guestDetail.FinalAmount ? formatMoney(guestDetail.FinalAmount) : '--'"
+                    class="dueAmount" :class="[guestDetail.FinalAmount > 0 ? getBalancePriority(guestDetail) ? 'negativeBalance' : 'positiveBalance' : guestDetail.FinalAmount < 0 ? 'negativeBalance': 'zeroBalance']"></strong>
+                </li>
+                <!-- class="dueAmount" :class="[guestDetail.FinalAmount > 0 ? 'positiveBalance' : guestDetail.FinalAmount < 0 ? 'negativeBalance': 'zeroBalance'] ||  -->
+
+                <li>
+                    <strong v-if="guestDetail.TotalAmount !== null" v-text="formatMoney(guestDetail.TotalAmount)" class="totalAmount"></strong>
+                  </li>
+            </ul>
+        </div>       
+
+        <div class="dCell gp-status-cell" @click="createNewInstance(guestDetail)">
+            <div class="statusTypeDiv"><span class="statusType" :class="guestDetail.StatusName">{{guestDetail.StatusName}}</span></div>
+        </div>
+
+      
+    </div>
+    <div class="gp-list-tags-row" v-bind:id="guestDetail.Tag ? guestDetail.GuestProfileId + 'tag' : ''" >
+        <div class="gp-empty-cell">&nbsp;</div>
+        <div class="gp-list-tags" :id="guestDetail.GuestProfileId">
+            <span v-for="i in split(guestDetail.Tag)"><i class="fas fa-user-alt"></i> {{i}}</span>
+        </div>
+        <div class="ml-3 mt-1" style="color: #5b77d2;font-size: 14px;" v-if="guestDetail.Tag && more(guestDetail.GuestProfileId) != ''">
+            {{more(guestDetail.GuestProfileId)}} <span class="tags-more-btn" v-if="text!=''">{{text}}</span>
+        </div>
+        
+    </div>
+</div>

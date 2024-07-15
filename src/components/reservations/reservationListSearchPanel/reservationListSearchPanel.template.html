@@ -1,0 +1,87 @@
+<div class="resSearchData">
+    <div class="miSearchPanel">
+        <div class="searchWraper">
+            <div class="search-box" v-if="linkReservationToConversationVal">
+                <div class="col-md-12 pl-0 pr-0 pt-0">
+                    <span class="fas fa-search"
+                        style="margin: 10px 6px 0px 9px;float: left;color: #5b6a98;position: absolute;"></span>
+                    <input type="text" v-model="reservationSearchText" @keyup="Searchtext" class="inputBox"
+                        placeholder="Search">
+                    <!-- <input class="form-control" v-model="messageSearchText" type="text" @keyup="Searchtext" placeholder="Search" style="color: #484848;"> -->
+                    <i class="far fa-times" @click="clearMessageSearchText()"
+                        style="position: absolute;right: 13px;top: 10px;font-size: 14px;color: rgb(244, 67, 54);cursor: pointer;"></i>
+                </div>
+            </div>
+            <div class="searchData dTable" v-if="reservationList.length > 0">
+                <ul>
+                    <li class="guest-prior-list" v-for="reservation in reservationList"
+                        @click="selectReservationToAssign(reservation)"
+                        :class="selectedReservationId == reservation.ReservationId ? 'active':''">
+                        <div class="dTBodyRow" :class="reservation.StatusName ? reservation.StatusName : ''">
+                            <div class="dCell gp-prior-icon">
+                                <span class="gpSourceIcon"
+                                    :class="(reservation.SubSourceName && reservation.SubSourceName != '' && reservation.SubSourceName != null) ? reservation.SubSourceName : (reservation.SourceName && reservation.SourceName !='' && reservation.SourceName != null) ? reservation.SourceName : ''"></span>
+                            </div>
+                            <div class="dCell gp-guest-names">
+                                <div>
+                                    <strong>
+                                        {{reservation.GuestFirstName}} {{reservation.GuestLastName}}
+                                    </strong>
+                                    <div v-if="reservation.NumberOfAdults == 0">
+                                        <span>{{reservation.Persons}}</span><span> Persons</span>
+                                    </div>
+                                    <div v-if="reservation.NumberOfAdults != 0">
+                                        <span>{{reservation.NumberOfAdults}}</span><span> Adults,</span>
+                                        <span>{{reservation.NumberOfChildren}}</span><span
+                                            v-if="reservation.NumberOfChildren > 1 || reservation.NumberOfChildren == 0">
+                                            Children</span>
+                                        <span v-if="reservation.NumberOfChildren == 1"> Child</span>
+                                    </div>
+                                    <div class="srt-lt">
+                                        <strong>{{reservation.PropertyNickName}}</strong>
+                                        <strong>{{reservation.UnitNickName}}</strong>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="dCell gp-staydates srt-lt">
+                                <div>
+                                    <strong>{{formatPriorStayDate(reservation.originalStartDate)}}</strong><br>
+                                    <span>{{getDay(reservation.originalStartDate)}}</span>
+                                </div>
+                                <div>
+                                    <strong>{{formatPriorStayDate(reservation.originalEndDate)}}</strong><br>
+                                    <span>{{getDay(reservation.originalEndDate)}}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+            <div v-if="reservationList.length < 1 && reservationSearchText && showNoRes" class="noAsignResBox">
+                <div class="no-chatMessage-body">
+                    <i class="fas fa-bed"></i>
+                    <p class="mt-2 mb-0">No Reservations</p>
+                </div>
+            </div>
+        </div>
+        <!-- <div class="footerAssignBtn" v-show="reservationSearchText && reservationList.length > 0">
+            <button class="btn btn-primary btn-sm" :disabled="!selectedReservationId" @click="openPopup()">
+                Assign Reservation
+            </button>
+        </div> -->
+        <div v-if="!reservationSearchText" class="noAsignResBox">
+            <div class="no-chatMessage-body" v-if="!linkReservationToConversationVal">
+                <i class="far fa-link"></i>
+                <p class="mt-2 mb-0">Click link icon to assign reservation</p>
+            </div>
+            <div class="no-chatMessage-body" v-else>
+                <i class="fas fa-search"></i>
+                <p class="mt-2 mb-0">Search for a reservation to associate this thread with</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="assginConversationModal">
+        <foliomodal v-show="isModalVisible" @close="closePopup()" :params="modalParams" />
+    </div>
+</div>

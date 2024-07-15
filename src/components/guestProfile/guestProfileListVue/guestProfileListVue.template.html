@@ -1,0 +1,97 @@
+<div class="panel panel-default">
+    <div class="panel-heading">
+        <!-- <h4 class="pull-left">Guest Profile List</h4> -->
+        <div class="btn-group">
+
+            <!-- <select class="form-control" v-model="propertyId">
+                <option :value="-1">Select Property</option>
+                <option v-for="property in propertyList" :value="property.PropertyId">{{property.PropertyName}}</option>
+            </select> -->
+
+            <select class="form-control" v-model="statusId">
+                <option :value="null">Select Status</option>
+                <option v-for="status in statusList" :value="status.StatusId">{{status.StatusName}}</option>
+            </select>
+            <select class="form-control" v-model="profileType">
+                <option :value="null">Select Profile</option>
+                <option v-for="profileType in profileTypeList" :value="profileType.profileTypeId">{{profileType.profileTypeName}}</option>
+            </select>
+
+            <button class="btn btn-default btn-sm" @click="Get_GuestProfileList('filter')">
+                Apply Filter
+            </button>
+
+        </div>
+
+        <div class="btn-group pull-right" style="z-index:0">
+            <!-- <button class="btn btn-default btn-sm" @click="switchView">
+                <i v-if="listType == 'list'" class="fa fa-th-large"></i>
+                <i v-if="listType != 'list'" class="fa fa-table"></i>
+            </button> -->
+            <div class="col-md-4 pl-1 pr-0" style="min-width: 330px;">
+                <input class="form-control" v-model="guestProfileListSearch" type="text" @keyup="Searchtext" placeholder="Search" style="color: #484848;">
+                <i class="far fa-times" @click="clearGuestProfileListSearch()" style="position: absolute;right: 5px;top: 0px;font-size: 14px;color: rgb(244, 67, 54);cursor: pointer;background: #ffffff;padding: 8px 8px;border-top-right-radius: 3px;border-bottom-right-radius: 3px;"></i>
+            </div>
+            <button class="btn btn-default btn-sm" title="Add New Profile" style="float: right" @click="createNewInstance('-1')">
+                <i class="fa fa-plus "></i> Add new profile
+            </button>
+        </div>
+    </div>
+    <div>
+        <span v-if="TotalGuests > 1" class="defaultView" style="margin-top: -3px;margin-right: 16px;">{{TotalGuests}} {{profileType == 3 ? 'Guest Profile' : 'Company Profile'}}</span>
+        <span v-else-if="(TotalGuests === 1) || (TotalGuests < 1)" class="defaultView" style="margin-top: -3px;margin-right: 16px;">{{TotalGuests}} {{profileType == 3 ? 'Guest Profile' : 'Company Profile'}}</span>
+    </div>
+    <div class="GpGrid">
+        <div class="dTable">
+            <div class="dTHead">
+                <div v-for="column in headerColumnList" v-bind:class="column.className" class="dCell" v-if="(selectedProfileType != 3) || (column.ColumnName !== 'TotalAmount')">
+                    <div class="dTableSortWrap">
+                        <span v-text="column.Label" v-if="column.ColumnName == 'Actions'" v-bind:class="column.Label"></span>
+                        <span class="dropdown mainDD keep-open" v-if="column.ColumnName !== 'Actions'">
+                            <button class="btn dropdown-toggle resListSortBtn" type="button" data-toggle="dropdown">
+                                <span class="colLabel" v-text="column.Label" v-bind:class="column.Label"></span>
+                                <i class="fa resListSortIcon" :class="column.isAscOrDesc"></i>
+                            </button>
+                            <ul class="resListSortMenu dropdown-menu">
+                                <li class="heading">Sort By</li>
+                                <li v-for="sortby in column.sortLabels" v-if="column.ColumnName !== 'Actions'" :class="sortby.isSortAscOrDesc" @click="ascSort(sortby.ColumnName, sortby.SortOder)">
+                                    <span>{{sortby.Label}}</span>
+                                    <i v-if="sortby.isSortAscOrDesc == 'asc'" class="fa fa-arrow-up"></i>
+                                    <i v-if="sortby.isSortAscOrDesc == 'desc'" class="fa fa-arrow-down"></i>
+                                    <span :class="column.class" v-show="sortby.isSortLoading"></span>
+                                </li>
+                            </ul>
+                        </span>
+                    </div>
+                </div>
+                <!-- <div class="dCell gp-actions-cell">Actions</div>
+                <div class="dCell gp-name-src-cell">
+                <div class="gp-name-cell">Guest Name</div> 
+                <div class="gp-source-cell">Source</div> 
+                </div> 
+                <div class="dCell gp-history-cell">History</div>
+                <div class="dCell gp-laststay-cell">Last Stay</div>
+                <div class="dCell gp-status-cell">Status</div>   -->
+            </div>
+            <div v-show="linearProgress">
+                <div class="loader"></div>
+            </div>
+            <div class="dTBody gp-list-body gpList">
+                <pageLoadingComponent v-show="loading && reRender == false"></pageLoadingComponent>
+                <div v-show="isGreyOut" style="position: fixed; background: rgba(0, 0, 0, 0.41); left: 0; top: 0; width: 100%; height: 100vh; z-index: 1030;"></div>
+                    <virtual-list v-if="(loading == false && items.length > 0) || reRender" ref="scroller" :items="items" uniqueKey="id" :iscrollOptions="options" :variable="variable" :infinite="true" :pulldown="false" @loadMore="getMoreData" @pullRefresh="refreshData">
+
+                        <template slot="content" slot-scope="props">
+                            <guestProfileItem :id="props.item.GuestProfileId" :guestDetail="reservationsListObj[props.item.GuestProfileId] ? reservationsListObj[props.item.GuestProfileId].guestObj : null"
+                            v-if="props.item.GuestProfileId"></guestProfileItem>
+                        </template>
+
+
+                    </virtual-list>
+                    <div>
+                        <span v-if="items.length == 0 && TotalGuests == 0" v-show="!loading">{{profileType == 3 ? 'There are no guest profiles to show.' : 'There are no company profiles to show.'}}</span>
+                    </div>
+            </div>
+        </div>
+    </div>
+</div>

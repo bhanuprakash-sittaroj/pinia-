@@ -1,0 +1,32 @@
+{
+  "name": "vite-project",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@vee-validate/i18n": "^4.13.1",
+    "@vee-validate/rules": "^4.13.1",
+    "accounting": "^0.4.1",
+    "bootstrap": "^5.3.3",
+    "jquery": "^3.7.1",
+    "knockout": "^3.5.1",
+    "moment-timezone": "^0.5.45",
+    "pinia": "^2.1.7",
+    "sass": "^1.77.6",
+    "socket.io-client": "^4.7.5",
+    "toastr": "^2.1.4",
+    "vee-validate": "^4.13.1",
+    "vue": "^3.4.29",
+    "vue-router": "^4.3.3"
+  },
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^26.0.1",
+    "@vitejs/plugin-vue": "^5.0.5",
+    "vite": "^5.3.1"
+  }
+}

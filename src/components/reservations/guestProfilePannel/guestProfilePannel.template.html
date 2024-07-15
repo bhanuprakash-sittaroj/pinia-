@@ -1,0 +1,45 @@
+<div>
+    <div class="reservationSummary guestProfileSidePanel">
+        <pageLoadingComponent v-show="isLoading && reRender == false"></pageLoadingComponent>
+        <div style="height: 47px; border-bottom: 1px solid #f3f3f3;">
+            <span class="gp-panel-close-btn" @click="closeSummaryPannel('close')">
+                <i class="far fa-times" ></i>
+            </span>
+            <div style="font-size: 12px;position: relative;top: 4px;left: 19px;display: inline-block;" v-if="searchObj.profileType == 3">{{TotalGuests}} {{TotalGuests > 1 || TotalGuests == 0 ? 'Guest Profiles' : 'Guest Profile'}}</div>
+            <div style="font-size: 12px;position: relative;top: 4px;left: 19px;display: inline-block;" v-if="searchObj.profileType == 7">{{TotalGuests}} {{TotalGuests > 1 || TotalGuests == 0 ? 'Company Profiles' : 'Company Profile'}}</div>
+            <div v-if='!isLoading && items.length == 0' style="position: relative;top: 0px;left: 16px;font-size: 12px;color: #f03e3e;z-index: -1;">
+                <i class="fa fa-exclamation-triangle"></i> {{searchObj.profileType == 3 ? 'No Guests for your search' : 'No Companies for your search'}}</div>
+        </div>
+        <virtual-list v-if="(isLoading == false && items.length > 0) || reRender" :items="items" uniqueKey="id" :iscrollOptions="options" :variable="variable" :infinite="true"
+            :pulldown="true" :pulldownText="pullDownTextObj" @loadMore="getMoreData" @pullRefresh="refreshData">
+
+            <template slot="content" slot-scope="props">
+                <guestPannelItem :id="props.item.GuestProfileId" :callBack="sendGuestInfoToDetail" :guestDetail="reservationsListObj[props.item.GuestProfileId] ? reservationsListObj[props.item.GuestProfileId].guestObj : null"
+                    v-if="props.item.GuestProfileId"></guestPannelItem>
+            </template>
+
+
+        </virtual-list>
+
+        <!-- <div style="overflow-y: auto; height: calc(100vh - 105px);">
+        <ul class="guestProfileSidePanelList" v-if ="TotalGuests > 0">
+            <li v-for="item in guestsList" @click="sendGuestInfoToDetail(item)">
+                <div>
+                    <strong>{{item.GuestFirstName}} {{item.GuestLastName}}</strong>
+                    <span>{{item.PhoneNumber}}</span>
+                    <span class="gp-email">{{item.Emailaddress}}</span>
+                </div>
+                <div>
+                    <span v-if="item.ArrivalDate">{{formatDate(item.ArrivalDate)}}</span>
+                    <span v-if="item.Stays">+ {{item.Stays}} {{item.Stays > 1 ? 'Bookings' : item.Stays == 1 ? 'Booking' : ''}}</span>
+                </div>
+                <div>
+                    <span class="gpSourceIcon" :class="(item.SubSourceName && item.SubSourceName != '' && item.SubSourceName != null) ? item.SubSourceName : (item.SourceName && item.SourceName !='' && item.SourceName != null) ? item.SourceName : ''"></span>
+                </div>
+
+            </li>
+        </ul>
+        </div> -->
+    </div>
+    <!-- <div class="menuMaskRevSum"></div> -->
+</div>
